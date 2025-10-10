@@ -4,15 +4,17 @@ import Link from "next/link";
 
 const Logo: React.FC = () => {
   return (
-    <Link href="/">
-      <Image
-        src={getImagePath("/images/logo/logo.svg")}
-        alt="logo"
-        width={160}
-        height={50}
-        style={{ width: "auto", height: "auto" }}
-        quality={100}
-      />
+    <Link href="/" className="block">
+      <div className="flex items-center">
+        <Image
+          src={getImagePath("/images/logo/logo.svg")}
+          alt="Colio Logo"
+          width={130}
+          height={40}
+          priority
+          className="h-10 w-auto md:h-11 object-contain transition-transform duration-300 hover:scale-[1.03]"
+        />
+      </div>
     </Link>
   );
 };
