@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const isProd = process.env.NODE_ENV === 'production'
-const basePath = isProd ? '/crypto-nextjs' : ''
+const basePath = isProd ? '/' : ''
 
 const nextConfig = {
   // output: 'export',
