@@ -119,7 +119,7 @@ export default function Banner() {
         >
           <div className="relative w-full max-w-lg mx-auto">
             <Image
-              src={getImagePath("/images/banner/banner.png")}
+              src={getImagePath("/images/banner/banner1.png")}
               alt="Colio App Preview"
               width={880}
               height={660}
