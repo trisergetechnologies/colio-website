@@ -98,14 +98,14 @@ export default function Banner() {
               Get Started
             </motion.a>
 
-            <motion.button
+            {/* <motion.button
               whileHover={{ scale: 1.05 }}
               onClick={() => setOpen(true)}
               className="flex items-center gap-3 px-6 py-3 border border-white/30 rounded-2xl text-white/90 text-lg backdrop-blur-sm hover:bg-white/10 transition-all"
             >
               <Icon icon="tabler:play-filled" className="text-2xl text-[#f0abfc]" />
               Watch How It Works
-            </motion.button>
+            </motion.button> */}
           </div>
         </motion.div>
 
