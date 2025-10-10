@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: "Colio",
 };
 
-const comingSoon = true;
+const comingSoon = false;
 
 
 
