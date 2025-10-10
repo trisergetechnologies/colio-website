@@ -14,7 +14,9 @@ export const Headerdata: HeaderItem[] = [
   // { label: "Pricing", href: "/#pricing-section" },
 ];
 
-const basePath = process.env.NODE_ENV === "production" ? "/crypto-nextjs" : "";
+// const basePath = process.env.NODE_ENV === "production" ? "/crypto-nextjs" : "";
+const basePath = "";
+
 
 // ✅ Company Logos
 export const Companiesdata: { imgSrc: string }[] = [
