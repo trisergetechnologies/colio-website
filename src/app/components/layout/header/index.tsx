@@ -10,11 +10,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { colors } from "@/constants/colors";
 import Image from "next/image";
 import { getImagePath } from "@/lib/utils/imagePath";
+import { useRouter } from "next/navigation";
+import { IoWallet } from "react-icons/io5";
+
 
 export default function Header() {
   const [navbarOpen, setNavbarOpen] = useState(false);
   const [sticky, setSticky] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const handleScroll = () => setSticky(window.scrollY >= 20);
 
@@ -66,14 +70,14 @@ export default function Header() {
           {/* CTA + Mobile Toggle */}
           <div className="flex items-center gap-4">
             <Link
-              href="#contact"
+              href="../wallet"
               className="hidden lg:flex items-center gap-2 text-white font-medium px-6 py-3 rounded-lg transition-transform hover:scale-105"
               style={{
                 background: `linear-gradient(90deg, ${colors.button.start}, ${colors.button.end})`,
               }}
             >
-              <Icon icon="ic:round-download" className="text-2xl" />
-              Get the App
+              <IoWallet className="text-2xl"/>
+              Wallet
             </Link>
 
             <button
@@ -141,15 +145,15 @@ export default function Header() {
                 {/* CTA */}
                 <div className="flex flex-col gap-4 mt-10">
                   <Link
-                    href="#contact"
-                    onClick={() => setNavbarOpen(false)}
+                    href={"../wallet"}
+                    onClick={() => setNavbarOpen(false) }
                     className="w-full py-3 rounded-lg text-white font-medium flex items-center justify-center gap-2"
                     style={{
                       background: `linear-gradient(90deg, ${colors.button.start}, ${colors.button.end})`,
                     }}
                   >
-                    <Icon icon="ic:round-download" className="text-2xl" />
-                    Get the App
+                    <Icon icon="ic:round-wallet" className="text-2xl" />
+                    Wallet
                   </Link>
                 </div>
               </div>
