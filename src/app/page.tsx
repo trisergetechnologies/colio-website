@@ -1,20 +1,21 @@
 import { Metadata } from "next";
-import Banner from "./components/home/hero";
-import Work from "./components/home/work";
-import Features from "./components/home/features";
-import Simple from "./components/home/simple";
-import Faq from "./components/home/faq";
-import ContactForm from "./components/ContactForm";
-import AppDownloadSection from "./components/home/mobile-app";
 import ComingSoonPage from "./ComingSoonPage";
-import Header from "./components/layout/header";
+import ContactForm from "./components/ContactForm";
+import Faq from "./components/home/faq";
+import Features from "./components/home/features";
+import Banner from "./components/home/hero";
+import AppDownloadSection from "./components/home/mobile-app";
+import Simple from "./components/home/simple";
+import Work from "./components/home/work";
 import Footer from "./components/layout/footer";
+import Header from "./components/layout/header";
+import TopIndividuals from "./components/home/TopIndividuals";
 
 export const metadata: Metadata = {
   title: "Colio",
 };
 
-const comingSoon = true;
+const comingSoon = false;
 
 
 
@@ -31,6 +32,7 @@ export default function Home() {
       {/* <MaintenancePage/> */}
       <Header />
       <Banner/>
+      <TopIndividuals />
       <Work />
       <Features />
       <Simple />

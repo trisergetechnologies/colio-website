@@ -80,7 +80,7 @@ export default function Banner() {
           </h1>
 
           <p className="text-white/85 text-lg md:text-xl max-w-[90%] lg:max-w-[550px] mx-auto lg:mx-0 mb-10 leading-relaxed">
-            Talk, share, and grow with genuine individuals — all within a safe,
+            Talk it out. Chill it out. Colio it out with genuine individuals: All within a safe,
             secure, and premium app experience built for the next generation of
             digital connection.
           </p>
@@ -121,8 +121,8 @@ export default function Banner() {
             <Image
               src={getImagePath("/images/banner/banner1.png")}
               alt="Colio App Preview"
-              width={880}
-              height={660}
+              width={1280}
+              height={1080}
               className="relative z-10 drop-shadow-[0_0_40px_rgba(217,70,239,0.4)]"
             />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,70,239,0.25),transparent_80%)] blur-3xl rounded-full"></div>

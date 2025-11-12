@@ -34,14 +34,14 @@ const Footer = () => {
                 height={50}
                 className="h-12 w-auto object-contain"
               /> */}
-              <h2 style={{"fontWeight": 30}} >C O L I O</h2>
+              <h2 style={{"fontWeight": 100}} >C O L I O</h2>
             </div>
 
-            <p className="text-white/70 text-sm leading-relaxed max-w-[420px] mb-8">
-              Colio is more than just an app — it’s a growing ecosystem where
-              entertainment meets opportunity. Earn through engagement, shop
-              smarter, and withdraw your rewards seamlessly across our
-              integrated platforms.  
+            <p className="text-white/80 text-sm leading-relaxed max-w-[420px] mb-8">
+              Colio isn’t just another connection building app — it’s your space to be real.
+              A place where you can talk, vent, laugh, ask, share, or just vibe with real people who actually get it.
+              Whether you’re bored, curious, stressed, or simply craving a good conversation, Colio connects you instantly 
+              through call, chat, or video — no pressure, no judgment, just genuine connection. 
               <br />
               <span className="text-white/80">
                 Safe. Simple. Rewarding.
