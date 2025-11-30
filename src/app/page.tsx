@@ -29,7 +29,6 @@ export default function Home() {
 
   return (
     <main>
-      {/* <MaintenancePage/> */}
       <Header />
       <Banner/>
       <TopIndividuals />

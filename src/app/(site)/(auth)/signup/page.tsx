@@ -1,20 +1,17 @@
+import Header from "@/app/components/layout/header";
+import SignupPageClient from "./SignupPageClient";
+import Footer from "@/app/components/layout/footer";
 
-import SignUp from "@/app/components/auth/sign-up";
-import Breadcrumb from "@/app/components/shared/Breadcrumb";
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title:
-    "Sign Up | Property",
+export const metadata = {
+  title: "Sign Up | Colio",
 };
 
-const SignupPage = () => {
+export default function Page() {
   return (
-    <>
-      <Breadcrumb pageName="Sign Up Page" />
-      <SignUp />
-    </>
+    <div>
+      <Header/>
+      <SignupPageClient />
+      <Footer/>
+    </div>
   );
-};
-
-export default SignupPage;
+}

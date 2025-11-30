@@ -255,7 +255,7 @@ export default function TopIndividuals() {
           transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
         >
           <Link
-            href="../Professionals"
+            href="../experts"
             className="px-6 py-3 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white transition-all duration-300 backdrop-blur-md inline-flex items-center gap-2"
           >
             <span className="font-medium">See all professionals</span>

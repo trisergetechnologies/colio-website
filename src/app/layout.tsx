@@ -2,8 +2,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import Aoscompo from '@/lib/utils/aos'
 import ScrollToTop from './components/scroll-to-top'
-import Header from './components/layout/header'
-import Footer from './components/layout/footer'
+import { AuthProvider } from '@/context/AuthContext'
 const font = Inter({ subsets: ['latin'] })
 
 export default function RootLayout({
@@ -13,14 +12,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en' suppressHydrationWarning>
-      <body className={`${font.className}`}>
-        <Aoscompo>
-          
-          {children}
-          
-        </Aoscompo>
-        <ScrollToTop />
-      </body>
-    </html>
+      <AuthProvider>
+        <body className={`${font.className}`}>
+
+          <Aoscompo>
+
+            {children}
+
+          </Aoscompo>
+          <ScrollToTop />
+        </body>
+      </AuthProvider>
+    </html> 
   )
 }
