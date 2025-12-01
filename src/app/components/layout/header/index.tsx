@@ -8,10 +8,9 @@ import Logo from "./logo";
 import HeaderLink from "./navigation/HeaderLink";
 import { motion, AnimatePresence } from "framer-motion";
 import { colors } from "@/constants/colors";
-import Image from "next/image";
-import { getImagePath } from "@/lib/utils/imagePath";
 import { useRouter } from "next/navigation";
-import { IoWallet } from "react-icons/io5";
+import { IoLogIn, IoPersonCircle, IoWallet } from "react-icons/io5";
+import { useAuth } from "@/context/AuthContext";
 
 
 export default function Header() {
@@ -19,6 +18,7 @@ export default function Header() {
   const [sticky, setSticky] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { isAuthenticated, isAuthLoading } = useAuth();
 
   const handleScroll = () => setSticky(window.scrollY >= 20);
 
@@ -70,14 +70,15 @@ export default function Header() {
           {/* CTA + Mobile Toggle */}
           <div className="flex items-center gap-4">
             <Link
-              href="../wallet"
+              href={isAuthenticated ? "../profile" : "../signin"}
               className="hidden lg:flex items-center gap-2 text-white font-medium px-6 py-3 rounded-lg transition-transform hover:scale-105"
               style={{
                 background: `linear-gradient(90deg, ${colors.button.start}, ${colors.button.end})`,
               }}
             >
-              <IoWallet className="text-2xl"/>
-              Wallet
+              {isAuthenticated ? <IoPersonCircle className="text-2xl"/> : <IoLogIn className="text-2xl"/> }
+              
+              {isAuthenticated ? "Account" : "Sign In"}
             </Link>
 
             <button
@@ -145,15 +146,16 @@ export default function Header() {
                 {/* CTA */}
                 <div className="flex flex-col gap-4 mt-10">
                   <Link
-                    href={"../wallet"}
+                    href={isAuthenticated ? "../profile" : "../signin"}
                     onClick={() => setNavbarOpen(false) }
                     className="w-full py-3 rounded-lg text-white font-medium flex items-center justify-center gap-2"
                     style={{
                       background: `linear-gradient(90deg, ${colors.button.start}, ${colors.button.end})`,
                     }}
                   >
-                    <Icon icon="ic:round-wallet" className="text-2xl" />
-                    Wallet
+                    {isAuthenticated ? <IoPersonCircle className="text-2xl"/> : <IoLogIn className="text-2xl"/> }
+              
+                    {isAuthenticated ? "Account" : "Sign In"}
                   </Link>
                 </div>
               </div>

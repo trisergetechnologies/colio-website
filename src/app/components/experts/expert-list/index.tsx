@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { colors } from "@/constants/colors";
 import { getToken } from "@/lib/utils/tokenHelper"; // adjust path if different
-import { startVideoCall, startVoiceCall } from "@/lib/utils/callHelpers";
+import { useCall } from "@/context/CallContext";
 
 /* ----------------------------- Types & Dummy Data ----------------------------- */
 
@@ -297,13 +297,27 @@ export default function ExpertsList() {
     }
   };
 
+  const { initiateCall } = useCall();
+
   // Start call handlers (for web we route to call pages — replace with real call flow)
-  // const startVoiceCall = (consultantId: string) => {
-  //   router.push(`/call/voice/${consultantId}`);
-  // };
-  // const startVideoCall = (consultantId: string) => {
-  //   router.push(`/call/video/${consultantId}`);
-  // };
+  const handleVoiceCall = (consultant: Consultant) => {
+    initiateCall(
+      consultant.id,
+      'voice',
+      consultant.name,
+      consultant.avatar || undefined
+    );
+  };
+
+  const handleVideoCall = (consultant: Consultant) => {
+    initiateCall(
+      consultant.id,
+      'video',
+      consultant.name,
+      consultant.avatar || undefined
+    );
+  };
+
   const startChat = (consultantId: string) => {
     router.push(`/chat/${consultantId}`);
   };
@@ -480,7 +494,7 @@ export default function ExpertsList() {
                     {/* Actions */}
                     <div className="mt-4 flex items-center gap-3">
                       <button
-                        onClick={(e) => { e.stopPropagation(); startVoiceCall(id, router); }}
+                        onClick={(e) => { e.stopPropagation(); handleVoiceCall(c) }}
                         className="p-3 rounded-full border border-white/10 bg-black hover:bg-white/20 transition"
                         title="Voice Call"
                       >
@@ -496,7 +510,7 @@ export default function ExpertsList() {
                       </button>
 
                       <button
-                        onClick={(e) => { e.stopPropagation(); startVideoCall(id, router); }}
+                        onClick={(e) => { e.stopPropagation(); handleVideoCall(c); }}
                         className="p-3 rounded-full border border-white/10 bg-black hover:bg-white/20 transition"
                         title="Video Call"
                       >
