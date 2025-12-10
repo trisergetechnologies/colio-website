@@ -104,7 +104,7 @@ const cardVariants = {
 export default function ExpertsList() {
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.colio.in/api";
-
+  const [callingId, setCallingId] = useState<string | null>(null);
   // API pagination defaults
   const PAGE_LIMIT = 12;
 
@@ -300,22 +300,48 @@ export default function ExpertsList() {
   const { initiateCall } = useCall();
 
   // Start call handlers (for web we route to call pages — replace with real call flow)
-  const handleVoiceCall = (consultant: Consultant) => {
+  const handleVoiceCall = (consultant: any) => {
+    // ✅ Prevent double clicks
+    if (callingId) {
+      console.log('[ExpertsList] Already initiating a call');
+      return;
+    }
+
+    setCallingId(consultant.id);
+
     initiateCall(
       consultant.id,
       'voice',
       consultant.name,
-      consultant.avatar || undefined
+      consultant.avatar
     );
+
+    // ✅ Reset after 3 seconds
+    setTimeout(() => {
+      setCallingId(null);
+    }, 3000);
   };
 
-  const handleVideoCall = (consultant: Consultant) => {
+  const handleVideoCall = (consultant: any) => {
+    // ✅ Prevent double clicks
+    if (callingId) {
+      console.log('[ExpertsList] Already initiating a call');
+      return;
+    }
+
+    setCallingId(consultant.id);
+
     initiateCall(
       consultant.id,
       'video',
       consultant.name,
-      consultant.avatar || undefined
+      consultant.avatar
     );
+
+    // ✅ Reset after 3 seconds
+    setTimeout(() => {
+      setCallingId(null);
+    }, 3000);
   };
 
   const startChat = (consultantId: string) => {

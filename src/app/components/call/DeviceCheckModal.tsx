@@ -15,6 +15,7 @@ export default function DeviceCheckModal() {
   const [isConnecting, setIsConnecting] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const [sessionCreated, setSessionCreated] = useState(false); 
 
   useEffect(() => {
     if (callState.stage === 'preparing') {
@@ -80,6 +81,12 @@ export default function DeviceCheckModal() {
   };
 
   const handleContinue = async () => {
+
+      if (sessionCreated) {
+    console.log('[DeviceCheck] ⚠️ Session already created, ignoring');
+    return;
+  }
+
     // ✅ Allow call even if devices fail (can still hear/see consultant)
     if (callState.callType === 'video' && cameraStatus === 'unavailable') {
       const confirmContinue = window.confirm(
@@ -96,6 +103,7 @@ export default function DeviceCheckModal() {
     }
 
     setIsConnecting(true);
+    setSessionCreated(true);
 
     try {
       stopPreview();

@@ -1,7 +1,7 @@
-// contexts/CallContext.tsx
+// contexts/CallContext.tsx - FIXED VERSION
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useRef } from 'react';
 
 export type CallType = 'voice' | 'video';
 export type CallStage = 'idle' | 'preparing' | 'ringing' | 'connected' | 'ended';
@@ -41,6 +41,8 @@ const initialCallState: CallState = {
 
 export function CallProvider({ children }: { children: ReactNode }) {
   const [callState, setCallState] = useState<CallState>(initialCallState);
+  const initiatingRef = useRef(false); // ✅ Add guard flag
+  const lastCallTimestampRef = useRef(0); // ✅ Add timestamp guard
 
   const initiateCall = useCallback((
     consultantId: string, 
@@ -48,7 +50,36 @@ export function CallProvider({ children }: { children: ReactNode }) {
     consultantName?: string,
     consultantAvatar?: string
   ) => {
-    console.log('[CallContext] Initiating call:', { consultantId, callType });
+    const now = Date.now();
+    
+    // ✅ 1. Prevent rapid double calls (within 2 seconds)
+    if (now - lastCallTimestampRef.current < 2000) {
+      console.log('[CallContext] ⚠️ Call initiated too quickly, ignoring');
+      return;
+    }
+
+    // ✅ 2. Prevent if already initiating
+    if (initiatingRef.current) {
+      console.log('[CallContext] ⚠️ Already initiating call, ignoring');
+      return;
+    }
+
+    // ✅ 3. Prevent if already in active call
+    if (callState.stage !== 'idle') {
+      console.log('[CallContext] ⚠️ Already in call (stage:', callState.stage + '), ignoring');
+      return;
+    }
+
+    // ✅ Set guards
+    initiatingRef.current = true;
+    lastCallTimestampRef.current = now;
+
+    console.log('[CallContext] ========================================');
+    console.log('[CallContext] ✅ Initiating call');
+    console.log('[CallContext] Consultant ID:', consultantId);
+    console.log('[CallContext] Call type:', callType);
+    console.log('[CallContext] ========================================');
+
     setCallState({
       ...initialCallState,
       stage: 'preparing',
@@ -57,18 +88,36 @@ export function CallProvider({ children }: { children: ReactNode }) {
       consultantName,
       consultantAvatar,
     });
-  }, []);
+
+    // ✅ Reset initiating flag after a delay
+    setTimeout(() => {
+      initiatingRef.current = false;
+    }, 3000);
+  }, [callState.stage]);
 
   const endCall = useCallback(() => {
+    console.log('[CallContext] ========================================');
     console.log('[CallContext] Ending call');
+    console.log('[CallContext] Previous stage:', callState.stage);
+    console.log('[CallContext] ========================================');
+    
     setCallState(initialCallState);
-  }, []);
+    initiatingRef.current = false; // ✅ Reset guard
+    lastCallTimestampRef.current = 0; // ✅ Reset timestamp
+  }, [callState.stage]);
 
   const setCallStage = useCallback((stage: CallStage) => {
+    console.log('[CallContext] Stage change:', callState.stage, '→', stage);
     setCallState(prev => ({ ...prev, stage }));
-  }, []);
+  }, [callState.stage]);
 
   const setSessionData = useCallback((sessionId: string, channelName: string, token: string) => {
+    console.log('[CallContext] ========================================');
+    console.log('[CallContext] Session data received');
+    console.log('[CallContext] Session ID:', sessionId);
+    console.log('[CallContext] Channel:', channelName);
+    console.log('[CallContext] ========================================');
+    
     setCallState(prev => ({
       ...prev,
       sessionId,
@@ -79,7 +128,9 @@ export function CallProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setError = useCallback((error: string) => {
+    console.log('[CallContext] ❌ Error:', error);
     setCallState(prev => ({ ...prev, error, stage: 'ended' }));
+    initiatingRef.current = false; // ✅ Reset guard on error
   }, []);
 
   return (
