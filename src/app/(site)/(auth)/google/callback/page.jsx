@@ -13,7 +13,7 @@ export default function GoogleCallback() {
     if (!code) return;
     console.log("Code: ", code);
     // Send code to backend
-    axios.post(`${API_BASE_URL}/google/oauth`, { code })
+    axios.get(`${API_BASE_URL}/google/oauth`, { code })
       .then(async (res) => {
         const data = res.data;
         console.log("data from res", res.data);
