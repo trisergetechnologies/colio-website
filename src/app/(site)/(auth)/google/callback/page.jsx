@@ -11,15 +11,15 @@ export default function GoogleCallback() {
     const code = url.searchParams.get("code");
 
     if (!code) return;
-
+    console.log("Code: ", code);
     // Send code to backend
     axios.post(`${API_BASE_URL}/google/oauth`, { code })
       .then(async (res) => {
         const data = res.data;
-
+        console.log("data from res", res.data);
         if (data.success) {
           const { user, token, needRegister } = data.data;
-
+            
           // If new Google user → go register
           if (needRegister) {
             window.location.href = `/complete-profile?email=${user.email}`;
