@@ -9,8 +9,8 @@ export const Headerdata: HeaderItem[] = [
   { label: "Home", href: "/" },
   { label: "How It Works", href: "/#howitworks-section" },
   { label: "Features", href: "/#features-section" },
-  { label: "FAQ", href: "/#faq-section" },
-  { label: "Contact Us", href: "/#contact" },
+  // { label: "FAQ", href: "/#faq-section" },
+  // { label: "Contact Us", href: "/#contact" },
   // { label: "Pricing", href: "/#pricing-section" },
 ];
 

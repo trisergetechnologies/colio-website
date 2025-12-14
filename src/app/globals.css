@@ -80,3 +80,29 @@ html {
 .animate-float { animation: float 7s ease-in-out infinite; }
 .animate-float-slow { animation: float-slow 10s ease-in-out infinite; }
 .animate-gradientMove { animation: gradientMove 18s ease infinite; }
+
+/* =====================================================
+   Wallet / Modal Scrollbar (Modern + Thin)
+   ===================================================== */
+
+.wallet-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(232, 121, 249, 0.7) transparent;
+}
+
+.wallet-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.wallet-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.wallet-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #e879f9, #a855f7);
+  border-radius: 999px;
+}
+
+.wallet-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #f0abfc, #c084fc);
+}

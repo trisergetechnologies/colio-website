@@ -557,7 +557,7 @@ export default function ExpertsList() {
               disabled={isLoading}
               className="px-6 py-3 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white backdrop-blur-lg transition-all duration-300"
             >
-              {isLoading ? "Loading…" : "Load More"}
+              {isLoading ? "Refreshing…" : "Refresh"}
             </button>
           </div>
         )}

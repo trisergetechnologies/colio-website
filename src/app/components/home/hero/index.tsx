@@ -119,11 +119,11 @@ export default function Banner() {
         >
           <div className="relative w-full max-w-lg mx-auto">
             <Image
-              src={getImagePath("/images/banner/banner1.png")}
+              src={getImagePath("/images/banner/wallpaper-hero01.png")}
               alt="Colio App Preview"
               width={1280}
               height={1080}
-              className="relative z-10 drop-shadow-[0_0_40px_rgba(217,70,239,0.4)]"
+              className="rounded-2xl relative z-10 drop-shadow-[0_0_40px_rgba(217,70,239,0.4)]"
             />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,70,239,0.25),transparent_80%)] blur-3xl rounded-full"></div>
           </div>

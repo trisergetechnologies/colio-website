@@ -10,6 +10,7 @@ import Work from "./components/home/work";
 import Footer from "./components/layout/footer";
 import Header from "./components/layout/header";
 import TopIndividuals from "./components/home/TopIndividuals";
+import AvailabilityToast from "./components/shared/availability-toast";
 
 export const metadata: Metadata = {
   title: "Colio",
@@ -30,10 +31,11 @@ export default function Home() {
   return (
     <main>
       <Header />
+      <AvailabilityToast />
       <Banner/>
       <TopIndividuals />
-      <Work />
-      <Features />
+      {/* <Work /> */}
+      {/* <Features /> */}
       <Simple />
       <Faq />
       <AppDownloadSection/>
