@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import Logo from "./logo";
 import HeaderLink from "./navigation/HeaderLink";
 import { dancingScript } from "@/app/layout";
+import { Coins } from "lucide-react";
 
 import {
   IoLogIn,
@@ -115,7 +116,7 @@ export default function Header() {
                            text-white font-semibold
                            hover:bg-white/20 transition"
               >
-                <IoLogoBitcoin className="text-lg text-[#f0abfc]" />
+                <Coins size={18} color="#EAB308" strokeWidth={2.2} />
                 <span className="text-sm">{walletBalance}</span>
               </button>
             )}
@@ -134,7 +135,7 @@ export default function Header() {
                            text-white font-semibold
                            hover:bg-white/20 transition-all hover:scale-105"
               >
-                <IoLogoBitcoin className="text-xl text-[#f0abfc]" />
+                <Coins size={24} color="#EAB308" strokeWidth={2.2} />
                 <span className="text-sm">₹{walletBalance}</span>
               </a>
             )}

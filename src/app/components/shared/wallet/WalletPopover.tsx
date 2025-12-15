@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { IoClose, IoCashOutline } from "react-icons/io5";
+import { Coins } from "lucide-react";
 
 type WalletPopoverProps = {
   onClose?: () => void;
@@ -82,8 +83,8 @@ export default function WalletPopover({ onClose }: WalletPopoverProps) {
             )}
 
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#fde047] flex items-center justify-center">
-                <IoCashOutline className="w-5 h-5 text-black" />
+              <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center">
+               <Coins size={18} color="#EAB308" strokeWidth={2.2} />
               </div>
               <div>
                 <p className="text-white font-semibold text-lg">{pack.coins}</p>
