@@ -6,16 +6,28 @@ import { startCallSession } from '@/lib/api/communication';
 import { getToken } from '@/lib/utils/tokenHelper';
 import { useCall } from '@/context/CallContext';
 
-const AGORA_APP_ID = '8b9ed38f29bb4b1bbc7958f5fda8b054';
-
 export default function DeviceCheckModal() {
-  const { callState, setCallStage, setSessionData, setError, endCall } = useCall();
+  const { callState, setSessionData, setError, endCall } = useCall();
+  
+  // ============================================
+  // STATE
+  // ============================================
+  
   const [micStatus, setMicStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
   const [cameraStatus, setCameraStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
   const [isConnecting, setIsConnecting] = useState(false);
+  const [sessionCreated, setSessionCreated] = useState(false);
+
+  // ============================================
+  // REFS
+  // ============================================
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const [sessionCreated, setSessionCreated] = useState(false); 
+
+  // ============================================
+  // EFFECTS
+  // ============================================
 
   useEffect(() => {
     if (callState.stage === 'preparing') {
@@ -27,13 +39,17 @@ export default function DeviceCheckModal() {
     };
   }, [callState.stage]);
 
+  // ============================================
+  // DEVICE CHECK
+  // ============================================
+
   const checkDevices = async () => {
     console.log('[DeviceCheck] ========================================');
     console.log('[DeviceCheck] Checking devices...');
     console.log('[DeviceCheck] Call type:', callState.callType);
     console.log('[DeviceCheck] ========================================');
 
-    // ✅ Check microphone
+    // Check microphone
     try {
       const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       setMicStatus('available');
@@ -44,31 +60,32 @@ export default function DeviceCheckModal() {
       setMicStatus('unavailable');
     }
 
-    // ✅ Check camera (only for video calls)
+    // Check camera (only for video calls)
     if (callState.callType === 'video') {
       try {
-        const videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const videoStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user' }
+        });
         setCameraStatus('available');
-        
+
         // Show preview
         if (videoRef.current) {
           videoRef.current.srcObject = videoStream;
           streamRef.current = videoStream;
         }
-        
+
         console.log('[DeviceCheck] ✅ Camera available');
       } catch (error) {
         console.error('[DeviceCheck] ❌ Camera unavailable:', error);
         setCameraStatus('unavailable');
       }
     } else {
-      setCameraStatus('available'); // Not needed for voice calls
+      // Not needed for voice calls
+      setCameraStatus('available');
     }
 
     console.log('[DeviceCheck] ========================================');
     console.log('[DeviceCheck] Device check complete');
-    console.log('[DeviceCheck] Mic:', micStatus === 'available' ? '✅' : '❌');
-    console.log('[DeviceCheck] Camera:', cameraStatus === 'available' ? '✅' : '❌');
     console.log('[DeviceCheck] ========================================');
   };
 
@@ -80,14 +97,18 @@ export default function DeviceCheckModal() {
     }
   };
 
+  // ============================================
+  // HANDLERS
+  // ============================================
+
   const handleContinue = async () => {
+    // Prevent double session creation
+    if (sessionCreated) {
+      console.log('[DeviceCheck] ⚠️ Session already created, ignoring');
+      return;
+    }
 
-      if (sessionCreated) {
-    console.log('[DeviceCheck] ⚠️ Session already created, ignoring');
-    return;
-  }
-
-    // ✅ Allow call even if devices fail (can still hear/see consultant)
+    // Allow call even if devices fail - user can still see/hear consultant
     if (callState.callType === 'video' && cameraStatus === 'unavailable') {
       const confirmContinue = window.confirm(
         'Camera not available. You will join without video but can still see and hear the consultant. Continue?'
@@ -119,7 +140,7 @@ export default function DeviceCheckModal() {
       console.log('[DeviceCheck] Call type:', callState.callType);
       console.log('[DeviceCheck] ========================================');
 
-      // ✅ Start backend session
+      // Start backend session
       const session = await startCallSession(
         callState.consultantId!,
         callState.callType!,
@@ -132,13 +153,14 @@ export default function DeviceCheckModal() {
       console.log('[DeviceCheck] Channel:', session.channelName);
       console.log('[DeviceCheck] ========================================');
 
-      // ✅ Update context with session data
+      // Update context with session data -> moves to 'ringing' stage
       setSessionData(session.id, session.channelName, session.rtcToken);
 
     } catch (error: any) {
       console.error('[DeviceCheck] ========================================');
       console.error('[DeviceCheck] ❌ Error:', error);
       console.error('[DeviceCheck] ========================================');
+      setSessionCreated(false);
       setError(error.message || 'Failed to start call');
     } finally {
       setIsConnecting(false);
@@ -151,236 +173,179 @@ export default function DeviceCheckModal() {
     endCall();
   };
 
+  // ============================================
+  // RENDER GUARD
+  // ============================================
+
   if (callState.stage !== 'preparing') return null;
 
-  // ✅ Check if all devices are working fine
-  const allDevicesOk = micStatus === 'available' && cameraStatus === 'available';
-  const hasDeviceIssues = micStatus === 'unavailable' || 
+  // ============================================
+  // COMPUTED VALUES
+  // ============================================
+
+  const isChecking = micStatus === 'checking' || cameraStatus === 'checking';
+  const hasDeviceIssues = micStatus === 'unavailable' ||
     (callState.callType === 'video' && cameraStatus === 'unavailable');
 
+  // ============================================
+  // RENDER
+  // ============================================
+
   return (
-    <div style={styles.overlay}>
-      <div style={styles.modal}>
-        {/* Header */}
-        <div style={styles.header}>
-          <h2 style={styles.title}>
-            {callState.callType === 'video' ? 'Video Call' : 'Voice Call'}
+    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999]">
+      <div className="bg-[#1a1a1a] rounded-2xl p-8 w-[90%] max-w-[450px] border border-white/10">
+        
+        {/* ============================================ */}
+        {/* HEADER */}
+        {/* ============================================ */}
+        
+        <div className="text-center mb-6">
+          <h2 className="text-white text-2xl font-bold mb-2">
+            {callState.callType === 'video' ? '📹 Video Call' : '📞 Voice Call'}
           </h2>
-          <p style={styles.subtitle}>
+          <p className="text-white/70 text-sm">
             Calling {callState.consultantName || 'consultant'}
           </p>
         </div>
 
-        {/* Video Preview (for video calls) */}
+        {/* ============================================ */}
+        {/* VIDEO PREVIEW (Video calls only) */}
+        {/* ============================================ */}
+        
         {callState.callType === 'video' && (
-          <div style={styles.videoPreview}>
-            {cameraStatus === 'available' && streamRef.current ? (
+          <div className="w-full h-[280px] bg-black rounded-2xl overflow-hidden mb-6">
+            {cameraStatus === 'available' ? (
               <video
                 ref={videoRef}
                 autoPlay
                 muted
                 playsInline
-                style={styles.video}
+                className="w-full h-full object-cover scale-x-[-1]"
               />
             ) : cameraStatus === 'unavailable' ? (
-              <div style={styles.noCamera}>
-                <div style={styles.noCameraIcon}>📷</div>
-                <p style={styles.noCameraText}>Camera not available</p>
+              <div className="w-full h-full flex flex-col items-center justify-center text-white/50">
+                <span className="text-5xl mb-3">📷</span>
+                <p className="text-sm">Camera not available</p>
               </div>
             ) : (
-              <div style={styles.noCamera}>
-                <div style={styles.loadingIcon}>⏳</div>
-                <p style={styles.noCameraText}>Checking camera...</p>
+              <div className="w-full h-full flex flex-col items-center justify-center text-white/50">
+                <span className="text-5xl mb-3 animate-pulse">⏳</span>
+                <p className="text-sm">Checking camera...</p>
               </div>
             )}
           </div>
         )}
 
-        {/* ✅ Only show device status if there are issues */}
+        {/* ============================================ */}
+        {/* VOICE CALL AVATAR (Voice calls only) */}
+        {/* ============================================ */}
+        
+        {callState.callType === 'voice' && (
+          <div className="flex flex-col items-center py-10 mb-6">
+            <div className="w-[100px] h-[100px] rounded-full border-[3px] border-pink-500/50 flex items-center justify-center mb-4">
+              <div className="w-[80px] h-[80px] rounded-full bg-white/10 flex items-center justify-center">
+                <span className="text-4xl">👤</span>
+              </div>
+            </div>
+            <p className="text-white/70 text-base">Voice Call</p>
+          </div>
+        )}
+
+        {/* ============================================ */}
+        {/* DEVICE STATUS */}
+        {/* ============================================ */}
+        
+        {!isChecking && !hasDeviceIssues && (
+          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">✅</span>
+              <div>
+                <p className="text-green-400 font-semibold text-sm">Devices Ready</p>
+                <p className="text-white/60 text-xs mt-1">
+                  {callState.callType === 'video' 
+                    ? 'Camera and microphone are working' 
+                    : 'Microphone is working'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================ */}
+        {/* DEVICE ISSUES WARNING */}
+        {/* ============================================ */}
+        
         {hasDeviceIssues && (
-          <div style={styles.warning}>
-            <p style={styles.warningTitle}>⚠️ Device Issues Detected</p>
-            
+          <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4 mb-6">
+            <p className="text-orange-400 font-semibold text-sm mb-3">
+              ⚠️ Device Issues Detected
+            </p>
+
             {micStatus === 'unavailable' && (
-              <p style={styles.warningText}>
+              <p className="text-orange-400 text-sm mb-1">
                 • Microphone unavailable - You will join muted
               </p>
             )}
-            
+
             {callState.callType === 'video' && cameraStatus === 'unavailable' && (
-              <p style={styles.warningText}>
+              <p className="text-orange-400 text-sm mb-1">
                 • Camera unavailable - You will join without video
               </p>
             )}
-            
-            <p style={styles.warningSubtext}>
+
+            <p className="text-white/60 text-xs mt-3">
               You can still see and hear the consultant.
             </p>
           </div>
         )}
 
-        {/* ✅ Show loading state while checking */}
-        {(micStatus === 'checking' || cameraStatus === 'checking') && (
-          <div style={styles.checkingStatus}>
-            <p style={styles.checkingText}>🔍 Checking devices...</p>
+        {/* ============================================ */}
+        {/* CHECKING STATUS */}
+        {/* ============================================ */}
+        
+        {isChecking && (
+          <div className="bg-white/5 rounded-xl p-4 mb-6 text-center">
+            <p className="text-white/80 text-sm">🔍 Checking devices...</p>
           </div>
         )}
 
-        {/* Actions */}
-        <div style={styles.actions}>
+        {/* ============================================ */}
+        {/* ACTION BUTTONS */}
+        {/* ============================================ */}
+        
+        <div className="flex gap-3">
           <button
             onClick={handleCancel}
-            style={styles.cancelButton}
             disabled={isConnecting}
+            className={`flex-1 py-4 rounded-xl border border-white/20 bg-transparent text-white font-semibold text-base transition-colors ${
+              isConnecting 
+                ? 'opacity-50 cursor-not-allowed' 
+                : 'hover:bg-white/10 cursor-pointer'
+            }`}
           >
             Cancel
           </button>
+          
           <button
             onClick={handleContinue}
-            style={styles.continueButton}
-            disabled={isConnecting || micStatus === 'checking' || cameraStatus === 'checking'}
+            disabled={isConnecting || isChecking}
+            className={`flex-1 py-4 rounded-xl border-none bg-pink-500 text-white font-semibold text-base transition-colors ${
+              isConnecting || isChecking 
+                ? 'opacity-50 cursor-not-allowed' 
+                : 'hover:bg-pink-600 cursor-pointer'
+            }`}
           >
-            {isConnecting ? 'Connecting...' : 'Continue'}
+            {isConnecting ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="animate-spin">⏳</span>
+                Connecting...
+              </span>
+            ) : (
+              'Start Call'
+            )}
           </button>
         </div>
       </div>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  overlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 9999,
-  },
-  modal: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: '16px',
-    padding: '32px',
-    width: '90%',
-    maxWidth: '500px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-  },
-  header: {
-    marginBottom: '24px',
-    textAlign: 'center',
-  },
-  title: {
-    color: 'white',
-    fontSize: '24px',
-    fontWeight: '600',
-    margin: '0 0 8px 0',
-  },
-  subtitle: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: '14px',
-    margin: 0,
-  },
-  videoPreview: {
-    width: '100%',
-    height: '300px',
-    backgroundColor: '#000',
-    borderRadius: '12px',
-    overflow: 'hidden',
-    marginBottom: '24px',
-  },
-  video: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  noCamera: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'rgba(255, 255, 255, 0.5)',
-  },
-  noCameraIcon: {
-    fontSize: '48px',
-    marginBottom: '12px',
-  },
-  loadingIcon: {
-    fontSize: '48px',
-    marginBottom: '12px',
-    animation: 'pulse 1.5s infinite',
-  },
-  noCameraText: {
-    fontSize: '14px',
-    margin: 0,
-  },
-  checkingStatus: {
-    textAlign: 'center',
-    padding: '16px',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: '8px',
-    marginBottom: '24px',
-  },
-  checkingText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: '14px',
-    margin: 0,
-  },
-  warning: {
-    backgroundColor: 'rgba(255, 165, 0, 0.1)',
-    border: '1px solid rgba(255, 165, 0, 0.3)',
-    borderRadius: '8px',
-    padding: '16px',
-    marginBottom: '24px',
-  },
-  warningTitle: {
-    color: '#FFA500',
-    fontSize: '16px',
-    fontWeight: '600',
-    margin: '0 0 12px 0',
-  },
-  warningText: {
-    color: '#FFA500',
-    fontSize: '14px',
-    margin: '4px 0',
-  },
-  warningSubtext: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: '13px',
-    marginTop: '12px',
-    marginBottom: 0,
-  },
-  actions: {
-    display: 'flex',
-    gap: '12px',
-  },
-  cancelButton: {
-    flex: 1,
-    padding: '14px',
-    borderRadius: '8px',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    backgroundColor: 'transparent',
-    color: 'white',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  continueButton: {
-    flex: 1,
-    padding: '14px',
-    borderRadius: '8px',
-    border: 'none',
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-};

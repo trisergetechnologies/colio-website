@@ -1,34 +1,54 @@
 // components/call/CallManager.tsx
 'use client';
 
+import { useCall } from '@/context/CallContext';
 import DeviceCheckModal from './DeviceCheckModal';
 import ActiveCallModal from './ActiveCallModal';
-import { useCall } from '@/context/CallContext';
 
 export default function CallManager() {
-  const { callState } = useCall();
+  const { callState, endCall } = useCall();
 
-  // Show device check modal when preparing
+  // ============================================
+  // DEVICE CHECK STAGE
+  // ============================================
+  
   if (callState.stage === 'preparing') {
     return <DeviceCheckModal />;
   }
 
-  // Show active call modal when ringing or connected
+  // ============================================
+  // ACTIVE CALL STAGE (Ringing or Connected)
+  // ============================================
+  
   if (callState.stage === 'ringing' || callState.stage === 'connected') {
     return <ActiveCallModal />;
   }
 
-  // Show error modal if error exists
+  // ============================================
+  // ERROR STAGE
+  // ============================================
+  
   if (callState.stage === 'ended' && callState.error) {
     return (
-      <div style={styles.overlay}>
-        <div style={styles.errorModal}>
-          <div style={styles.errorIcon}>⚠️</div>
-          <h2 style={styles.errorTitle}>Call Failed</h2>
-          <p style={styles.errorMessage}>{callState.error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            style={styles.errorButton}
+      <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999]">
+        <div className="bg-[#1a1a1a] rounded-2xl p-8 w-[90%] max-w-[400px] text-center border border-red-500/30">
+          {/* Error Icon */}
+          <div className="text-6xl mb-4">⚠️</div>
+          
+          {/* Error Title */}
+          <h2 className="text-white text-2xl font-bold mb-3">
+            Call Failed
+          </h2>
+          
+          {/* Error Message */}
+          <p className="text-white/70 text-sm mb-6 leading-relaxed">
+            {callState.error}
+          </p>
+          
+          {/* Close Button */}
+          <button
+            onClick={() => endCall()}
+            className="w-full py-4 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-semibold text-base transition-colors cursor-pointer"
           >
             Close
           </button>
@@ -37,54 +57,9 @@ export default function CallManager() {
     );
   }
 
+  // ============================================
+  // IDLE - NO MODAL
+  // ============================================
+  
   return null;
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  overlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 9999,
-  },
-  errorModal: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: '16px',
-    padding: '32px',
-    width: '90%',
-    maxWidth: '400px',
-    textAlign: 'center',
-    border: '1px solid rgba(255, 0, 0, 0.3)',
-  },
-  errorIcon: {
-    fontSize: '64px',
-    marginBottom: '16px',
-  },
-  errorTitle: {
-    color: 'white',
-    fontSize: '24px',
-    fontWeight: '600',
-    margin: '0 0 12px 0',
-  },
-  errorMessage: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: '14px',
-    marginBottom: '24px',
-  },
-  errorButton: {
-    padding: '12px 24px',
-    borderRadius: '8px',
-    border: 'none',
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
-};
