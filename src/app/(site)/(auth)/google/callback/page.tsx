@@ -23,11 +23,6 @@ export default function GoogleCallback() {
         if (data.success) {
         await saveAuthData(res.data.data);
         router.replace('/');
-          // If new Google user → go register
-          if (needRegister) {
-            window.location.href = `/complete-profile?email=${user.email}`;
-            return;
-          }
 
         }
       })
