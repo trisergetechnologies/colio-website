@@ -80,9 +80,9 @@ export default function Banner() {
           </h1>
 
           <p className="text-white/85 text-lg md:text-xl max-w-[90%] lg:max-w-[550px] mx-auto lg:mx-0 mb-10 leading-relaxed">
-            Talk it out. Chill it out. Colio it out with genuine individuals: All within a safe,
-            secure, and premium app experience built for the next generation of
-            digital connection.
+            Talk it out. Chill it out. Colio it out with genuine individuals:
+            All within a safe, secure, and premium app experience built for the
+            next generation of digital connection.
           </p>
 
           <div className="flex flex-wrap justify-center lg:justify-start gap-6">
@@ -97,6 +97,20 @@ export default function Banner() {
             >
               Get Started
             </motion.a>
+
+            <div className="flex flex-wrap justify-center lg:justify-start gap-6">
+              <motion.a
+                onClick={() => window.dispatchEvent(new Event("open-best-match"))}
+                whileHover={{ scale: 1.07 }}
+                whileTap={{ scale: 0.97 }}
+                className="text-lg font-semibold text-white py-3 px-12 rounded-2xl shadow-lg transition-all"
+                style={{
+                  background: `linear-gradient(90deg, ${colors.button.start}, ${colors.button.end})`,
+                }}
+              >
+                Best Match For You
+              </motion.a>
+            </div>
 
             {/* <motion.button
               whileHover={{ scale: 1.05 }}
@@ -146,9 +160,14 @@ export default function Banner() {
             animate={{ scale: 1, opacity: 1 }}
           >
             <div className="flex items-center justify-between p-5 border-b border-white/10">
-              <h3 className="text-white text-lg font-semibold">How Colio Works</h3>
+              <h3 className="text-white text-lg font-semibold">
+                How Colio Works
+              </h3>
               <button onClick={() => setOpen(false)}>
-                <Icon icon="tabler:circle-x" className="text-3xl text-white hover:text-[#f0abfc]" />
+                <Icon
+                  icon="tabler:circle-x"
+                  className="text-3xl text-white hover:text-[#f0abfc]"
+                />
               </button>
             </div>
             <iframe

@@ -8,8 +8,8 @@ const SocialSignIn = () => {
 
   return (
     <>
-      <div className='flex gap-4'>
-        <button onClick={()=> handleGoogleLogin()} className='flex w-full items-center justify-center gap-2.5 rounded-lg p-3.5 hover:bg-slateGray bg-linear-to-r from-primary/60 to-secondary/60 hover:from-primary hover:to-secondary text-white cursor-pointer'>
+      <div className='flex gap-6'>
+        <button onClick={()=> handleGoogleLogin()} className='flex w-full px-12 py-3 items-center justify-center gap-3.5 rounded-lg p-3.5 hover:bg-slateGray bg-linear-to-r from-primary/60 to-secondary/60 hover:from-primary hover:to-secondary text-white cursor-pointer'>
           <svg
             width='23'
             height='22'

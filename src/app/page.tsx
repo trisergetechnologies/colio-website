@@ -11,6 +11,8 @@ import Footer from "./components/layout/footer";
 import Header from "./components/layout/header";
 import TopIndividuals from "./components/home/TopIndividuals";
 import AvailabilityToast from "./components/shared/availability-toast";
+import WelcomeModalClient from "./components/modals/WelcomeModalClient";
+import BestMatchModalClient from "./components/modals/BestMatchModalClient";
 
 export const metadata: Metadata = {
   title: "Colio",
@@ -21,6 +23,8 @@ const comingSoon = false;
 
 
 export default function Home() {
+
+
 
   if(comingSoon){
   return(
@@ -41,6 +45,8 @@ export default function Home() {
       <AppDownloadSection/>
       <ContactForm />
       <Footer />
+       <WelcomeModalClient />
+       <BestMatchModalClient />
     </main>
   );
 }

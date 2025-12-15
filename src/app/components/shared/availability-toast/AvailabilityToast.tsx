@@ -30,12 +30,12 @@ export default function AvailabilityToast({
             top-[130px] left-1/2 
             -translate-x-1/2 -translate-y-1/2
             z-40
-            w-[520px]
+            w-[380px] lg:w-[500px]
             rounded-2xl
             border border-white/15
             bg-white/10 backdrop-blur-xl
             shadow-[0_12px_40px_-15px_rgba(217,70,239,0.35)]
-            px-5 py-4
+            px-4 py-3
           "
         >
           <div className="flex items-center gap-4">

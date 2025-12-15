@@ -9,7 +9,7 @@ const SocialSignUp = () => {
   return (
     <>
       <div className='flex gap-4'>
-        <button onClick={()=> handleGoogleLogin()} className='flex w-full items-center justify-center gap-2.5 rounded-lg p-3.5 bg-linear-to-r from-primary/60 to-secondary/60 hover:from-primary hover:to-secondary text-white cursor-pointer'>
+        <button onClick={()=> handleGoogleLogin()} className='flex w-full mt-6 items-center justify-center gap-2.5 rounded-lg p-3.5 bg-linear-to-r from-primary/60 to-secondary/60 hover:from-primary hover:to-secondary text-white cursor-pointer'>
           <svg
             width='23'
             height='22'

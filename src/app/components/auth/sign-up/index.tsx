@@ -112,10 +112,11 @@ export default function SignUp() {
     <div
       style={{
         minHeight: "100vh",
-        padding: "48px 20px",
+        padding: "78px 20px",
         boxSizing: "border-box",
         ...gradientStyles.background,
         color: colors.white,
+        
       }}
     >
       {/* Toaster */}

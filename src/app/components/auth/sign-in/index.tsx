@@ -1,4 +1,3 @@
-// components/auth/Signin.tsx
 "use client";
 
 import { useState } from "react";
@@ -6,11 +5,12 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import SocialSignIn from "../SocialSignIn";
-import Logo from "../../layout/header/logo";
 import { useAuth } from "@/context/AuthContext";
-import colors, { gradientStyles } from "@/constants/colors"; // adjust path if needed
+import colors from "@/constants/colors";
+import { dancingScript } from "@/app/layout";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.colio.in/api";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.colio.in/api";
 
 export default function Signin() {
   const router = useRouter();
@@ -19,188 +19,200 @@ export default function Signin() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ identifier?: string; password?: string }>({});
-
-  const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
-  const isValidPhone = (s: string) => /^[0-9]{10}$/.test(s);
-  const showToast = (m: string) => toast(m);
+  const [showEmailForm, setShowEmailForm] = useState(false);
 
   const handleLogin = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    setErrors({});
-    if (!identifier.trim()) return setErrors({ identifier: "Enter email or phone" });
-    if (!password) return setErrors({ password: "Enter password" });
-
-    let loginType: "email" | "phone" = "email";
-    if (identifier.includes("@")) loginType = "email";
-    else if (/^[0-9]+$/.test(identifier.trim())) loginType = "phone";
-
-    if (loginType === "email" && !isValidEmail(identifier))
-      return setErrors({ identifier: "Invalid email" });
-    if (loginType === "phone" && !isValidPhone(identifier))
-      return setErrors({ identifier: "Enter 10-digit phone" });
 
     try {
       setLoading(true);
       const payload = {
         identifier: identifier.trim().toLowerCase(),
         password,
-        loginType,
         role: "customer",
       };
-      const url = `${API_BASE_URL}/auth/login`;
-      const res = await axios.post(url, payload);
+
+      const res = await axios.post(
+        `${API_BASE_URL}/auth/login`,
+        payload
+      );
 
       if (res.data?.success && res.data?.data) {
         await saveAuthData(res.data.data);
-        showToast("Login successful!");
+        toast("Login successful!");
         router.replace("/home");
       } else {
-        showToast(res.data?.message || "Invalid credentials");
+        toast(res.data?.message || "Invalid credentials");
       }
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || "Login failed";
-      showToast(msg);
-      console.error("Login error:", err);
+      toast(err?.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        padding: "48px 20px",
-        boxSizing: "border-box",
-        ...gradientStyles.background,
-        color: colors.white,
-      }}
-    >
-      {/* <-- Toaster added here so all toasts will display */}
-      <Toaster position="top-right" toastOptions={{ style: { background: "#111", color: "#fff" } }} />
+    <div className="relative min-h-screen  lg:pt-[120px] flex justify-center text-white">
+      {/* PAGE BACKGROUND IMAGE (replaces gradient) */}
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-20"
+        style={{
+          backgroundImage:
+            "url(https://images.unsplash.com/photo-1529156069898-49953e39b3ac)",
+        }}
+      />
+      <div className="absolute inset-0 bg-black/70" />
 
-      <div className="max-w-3xl mx-auto">
-        
+      <Toaster position="top-right" />
 
-        {/* Auth box */}
+      {/* CONTENT */}
+      <div className="relative z-10 w-full flex justify-center">
+        {/* AUTH CARD */}
         <div
-        
-          style={{
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.06)",
-            borderRadius: 14,
-            padding: 22,
-            boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
-          }}
-        > 
+          className="
+            relative
+            w-full
+            min-h-screen sm:min-h-0
+            sm:max-w-md
+            lg:max-w-[520px]
+            xl:max-w-[720px]
+            lg:h-[420px]
+            xl:h-[520px]
+            rounded-none sm:rounded-2xl
+            overflow-hidden
+            shadow-2xl
+          "
+        >
+          {/* CARD BACKGROUND */}
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage:
+                "url(https://images.unsplash.com/photo-1529156069898-49953e39b3ac)",
+            }}
+          />
 
-        {/* Logo */}
-        <div className="mb-8 text-center">
-          <div className="inline-block" style={{ maxWidth: 160 }}>
-            <Logo />
+          {/* TOP TITLE */}
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20 text-center">
+            <h1 className={`text-5xl pt-3 ${dancingScript.className}`}>
+              Colio
+            </h1>
+            <p className="mt-1 text-sm text-white/70 tracking-wide">
+              Please sign in to continue
+            </p>
           </div>
-        </div>
 
-          {/* Form */}
-          <form onSubmit={handleLogin}>
-            <div className="mb-4">
-              <input
-                type="text"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="Email or 10-digit phone"
-                aria-label="Email or phone"
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  background: "transparent",
-                  color: colors.white,
-                  outline: "none",
-                }}
-              />
-              {errors.identifier && (
-                <div className="text-sm mt-2" style={{ color: colors.error }}>
-                  {errors.identifier}
-                </div>
+          <div className="absolute inset-0 bg-black/65" />
+
+          {/* CENTER CONTENT */}
+          <div className="relative z-10 h-full flex items-center justify-center px-6 sm:px-8">
+            <div className="w-full max-w-sm flex flex-col items-center">
+              {/* GOOGLE + EMAIL */}
+              {!showEmailForm && (
+                <>
+                  <div
+                    className="
+                      w-full
+                      [&>button]:w-full
+                      [&>button]:py-3
+                      [&>button]:rounded-xl
+                      [&>button]:text-sm
+                    "
+                  >
+                    <SocialSignIn />
+                  </div>
+
+                  <button
+                    onClick={() => setShowEmailForm(true)}
+                    className="
+                      mt-4
+                      w-full
+                      rounded-xl
+                      border border-white/20
+                      bg-white/10
+                      py-3
+                      text-sm font-medium
+                      hover:bg-white/15
+                      transition
+                    "
+                  >
+                    Continue with Email
+                  </button>
+                </>
               )}
-            </div>
 
-            <div className="mb-6">
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
-                aria-label="Password"
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  background: "transparent",
-                  color: colors.white,
-                  outline: "none",
-                }}
-              />
-              {errors.password && (
-                <div className="text-sm mt-2" style={{ color: colors.error }}>
-                  {errors.password}
-                </div>
+              {/* EMAIL FORM */}
+              {showEmailForm && (
+                <form onSubmit={handleLogin} className="w-full">
+                  <div className="mb-4">
+                    <input
+                      type="text"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      placeholder="Email or phone"
+                      className="
+                        w-full
+                        rounded-xl
+                        border border-white/20
+                        bg-transparent
+                        px-4 py-3
+                        outline-none
+                      "
+                    />
+                  </div>
+
+                  <div className="mb-6">
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Password"
+                      className="
+                        w-full
+                        rounded-xl
+                        border border-white/20
+                        bg-transparent
+                        px-4 py-3
+                        outline-none
+                      "
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="
+                      w-full
+                      rounded-xl
+                      py-3
+                      font-semibold
+                    "
+                    style={{
+                      background:
+                        "linear-gradient(135deg,#8F87F1,#C68EFD)",
+                    }}
+                  >
+                    {loading ? "Please wait..." : "Sign In"}
+                  </button>
+                </form>
               )}
-            </div>
 
-            <div className="mb-6">
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: 10,
-                  border: "none",
-                  cursor: loading ? "not-allowed" : "pointer",
-                  ...gradientStyles.button,
-                  color: colors.white,
-                  fontWeight: 600,
-                }}
-              >
-                {loading ? "Please Wait . . ." : "Sign In"}
-              </button>
-            </div>
-          </form>
+              {/* FOOTER */}
+              <div className="mt-6 w-full flex justify-between text-sm">
+                <button
+                  onClick={() => router.push("/forgot-password")}
+                  className="text-purple-300 hover:underline"
+                >
+                  Forgot Password?
+                </button>
 
-          <div className="flex items-center my-4">
-            <div className="flex-1 h-[1px]" style={{ background: "rgba(255,255,255,0.12)" }} />
-            <div className="px-4 text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
-              OR
-            </div>
-            <div className="flex-1 h-[1px]" style={{ background: "rgba(255,255,255,0.12)" }} />
-          </div>
-
-          {/* Social sign-in (if present) */}
-          <div className="mb-6">
-            <SocialSignIn />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => router.push("/forgot-password")}
-              style={{ background: "transparent", border: "none", color: colors.accent[300], cursor: "pointer" }}
-            >
-              Forgot Password?
-            </button>
-
-            <div style={{ color: "rgba(255,255,255,0.8)" }}>
-              Not a member yet?{" "}
-              <button
-                onClick={() => router.push("/signup")}
-                style={{ background: "transparent", border: "none", color: colors.button.start, cursor: "pointer" }}
-              >
-                Sign Up
-              </button>
+                <button
+                  onClick={() => router.push("/signup")}
+                  className="text-purple-300 hover:underline"
+                >
+                  Sign Up
+                </button>
+              </div>
             </div>
           </div>
         </div>

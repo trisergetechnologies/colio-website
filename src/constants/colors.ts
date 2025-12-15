@@ -75,8 +75,19 @@ export const gradients = {
 // CSS-in-JS gradient styles
 export const gradientStyles = {
   background: {
-    background: `linear-gradient(135deg, ${colors.background.start} 0%, ${colors.background.end} 100%)`,
-  },
+  background: `
+    linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.55),
+      rgba(0, 0, 0, 0.55)
+    ),
+    linear-gradient(
+      135deg,
+      ${colors.background.start} 0%,
+      ${colors.background.end} 100%
+    )
+  `,
+},
   button: {
     background: `linear-gradient(90deg, ${colors.button.start} 0%, ${colors.button.end} 100%)`,
   },
