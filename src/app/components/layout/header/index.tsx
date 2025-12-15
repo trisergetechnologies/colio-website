@@ -263,6 +263,9 @@ export default function Header() {
                   <Link href="/#features" onClick={() => setNavbarOpen(false)}>
                     Features
                   </Link>
+                  <Link href="/profile" onClick={() => setNavbarOpen(false)}>
+                    Account
+                  </Link>
                 </nav>
               </div>
 
