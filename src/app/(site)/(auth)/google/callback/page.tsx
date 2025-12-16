@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -30,8 +30,13 @@ export default function GoogleCallback() {
   const { saveAuthData } = useAuth();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(true);
+  const hasRun = useRef(false); // Prevent double execution
 
   useEffect(() => {
+    // Prevent multiple executions in React Strict Mode
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     const handleGoogleCallback = async () => {
       try {
         const url = new URL(window.location.href);
@@ -51,9 +56,10 @@ export default function GoogleCallback() {
           return;
         }
 
-        // Send code to backend
+        // Send code to backend (only once)
         const response = await axios.get<GoogleAuthResponse>(
-          `${API_BASE_URL}/auth/google/oauth?code=${code}`
+          `${API_BASE_URL}/auth/google/oauth?code=${code}`,
+          { timeout: 10000 } // 10 second timeout
         );
 
         if (response.data.success && response.data.data) {
@@ -63,7 +69,7 @@ export default function GoogleCallback() {
           // Redirect based on user status
           setTimeout(() => {
             if (!response.data.data?.isPhoneVerified) {
-              router.replace("/onboarding"); // or wherever phone verification happens
+              router.replace("/");
             } else {
               router.replace("/");
             }
@@ -87,7 +93,7 @@ export default function GoogleCallback() {
     };
 
     handleGoogleCallback();
-  }, [saveAuthData, router]);
+  }, []); // Empty dependency array - run once only
 
   return (
     <>
