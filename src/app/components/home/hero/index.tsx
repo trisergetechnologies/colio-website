@@ -87,7 +87,7 @@ export default function Banner() {
 
           <div className="flex flex-wrap justify-center lg:justify-start gap-6">
             <motion.a
-              href="#howitworks-section"
+              href="/experts"
               whileHover={{ scale: 1.07 }}
               whileTap={{ scale: 0.97 }}
               className="text-lg font-semibold text-white py-3 px-10 rounded-2xl shadow-lg transition-all"

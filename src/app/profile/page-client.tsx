@@ -1,13 +1,18 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { colors } from "@/constants/colors";
-import { IoLogOutOutline, IoPencil } from "react-icons/io5";
+import {
+  IoLogOutOutline,
+  IoPencil,
+  IoCheckmark,
+  IoArrowBack,
+} from "react-icons/io5";
 import Spinner from "../components/Spinner";
 import { useRouter } from "next/navigation";
-import { IoArrowBack } from "react-icons/io5";
+import { dancingScript } from "@/app/layout";
 
 export default function ProfilePageClient() {
   const { user, isAuthLoading, isAuthenticated, logout } = useAuth();
@@ -35,37 +40,37 @@ export default function ProfilePageClient() {
         <div className="absolute top-[-180px] left-1/2 -translate-x-1/2 w-[900px] h-[900px] bg-[radial-gradient(circle,rgba(168,85,247,0.18),transparent_65%)] blur-3xl" />
       </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 pt-28 pb-24 space-y-14">
-        {/* ========== PROFILE HERO ========== */}
-        <ProfileHero user={user} />
-
-        {/* ========== BASIC INFO PANEL ========== */}
-        <BasicInfoPanel user={user} />
-
-        {/* ========== WALLET SECTION ========== */}
-        <WalletSection user={user} />
-
-        {/* ========== ACTION ZONE ========== */}
-        <ActionZone logout={logout} />
-      </div>
-
       {/* Back to Home */}
       <button
         onClick={() => router.push("/")}
-        className="fixed top-6 left-6 z-20 w-11 h-11 rounded-full 
-             bg-black/40 backdrop-blur border border-white/15
-             flex items-center justify-center
-             text-white hover:bg-white/10 transition"
-        aria-label="Go to Home"
+        className="fixed top-6 left-4 z-20 w-11 h-11 rounded-full 
+        bg-black/40 backdrop-blur border border-white/15
+        flex items-center justify-center
+        text-white hover:bg-white/10 transition"
       >
         <IoArrowBack className="w-6 h-6" />
       </button>
+
+      <button
+        onClick={() => router.push("/")}
+        className={`${dancingScript.className} fixed top-6 left-24 z-20
+        text-white text-4xl`}
+      >
+        Colio
+      </button>
+
+      <div className="relative z-10 max-w-6xl mx-auto px-4 pt-28 pb-24 space-y-14">
+        <ProfileHero user={user} />
+        <BasicInfoPanel user={user} />
+        <WalletSection user={user} />
+        <ActionZone logout={logout} />
+      </div>
     </section>
   );
 }
 
 /* ======================================================
-   PROFILE HERO – Editorial / Identity focused
+   PROFILE HERO
 ====================================================== */
 
 function ProfileHero({ user }: any) {
@@ -74,7 +79,6 @@ function ProfileHero({ user }: any) {
       <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(168,85,247,0.25),transparent_40%)]" />
 
       <div className="relative grid grid-cols-1 md:grid-cols-[auto_1fr] gap-8 p-8 md:p-12 items-center">
-        {/* Avatar */}
         <div className="flex justify-center md:justify-start">
           <div className="relative w-36 h-36 rounded-2xl overflow-hidden ring-4 ring-[#a855f7]/40 shadow-2xl">
             <Image
@@ -89,11 +93,8 @@ function ProfileHero({ user }: any) {
           </div>
         </div>
 
-        {/* Identity */}
         <div className="text-center md:text-left">
-          <h1 className="text-white text-4xl font-bold tracking-tight">
-            {user?.name}
-          </h1>
+          <h1 className="text-white text-4xl font-bold">{user?.name}</h1>
           <p className="text-white/70 mt-2 text-lg">
             {user?.email || user?.phone}
           </p>
@@ -107,52 +108,130 @@ function ProfileHero({ user }: any) {
 }
 
 /* ======================================================
-   BASIC INFO – Clean data panel (not glass)
+   BASIC INFO – Editable
 ====================================================== */
 
 function BasicInfoPanel({ user }: any) {
+  const [isEditing, setIsEditing] = useState(false);
+
+  const [dob, setDob] = useState(
+    user?.dateOfBirth
+      ? new Date(user.dateOfBirth).toISOString().slice(0, 10)
+      : ""
+  );
+
+  const [languages, setLanguages] = useState<string[]>(
+    Array.isArray(user?.languages) ? user.languages.slice(0, 3) : []
+  );
+
+  const updateLanguage = (i: number, value: string) => {
+    const copy = [...languages];
+    copy[i] = value;
+    setLanguages(copy);
+  };
+
+  const addLanguage = () => {
+    if (languages.length < 3) setLanguages([...languages, ""]);
+  };
+
+  const saveChanges = () => {
+    console.log("DOB:", dob);
+    console.log("Languages:", languages.filter(Boolean));
+    setIsEditing(false);
+  };
+
   return (
     <div className="rounded-2xl bg-[#0f0f14] border border-white/10">
-      <div className="px-6 md:px-8 py-5 border-b border-white/10">
+      <div className="flex justify-between items-center px-6 md:px-8 py-5 border-b border-white/10">
         <h2 className="text-white text-xl font-semibold">
           Basic Information
         </h2>
+
+        {!isEditing ? (
+          <button onClick={() => setIsEditing(true)}>
+            <IoPencil className="text-white/70 w-5 h-5" />
+          </button>
+        ) : (
+          <button
+            onClick={saveChanges}
+            className="flex items-center gap-1 text-green-400"
+          >
+            <IoCheckmark />
+            Save
+          </button>
+        )}
       </div>
 
       <div className="divide-y divide-white/10">
-        <InfoRow label="Gender" value={user?.gender || "Not set"} />
-        <InfoRow
-          label="Date of Birth"
-          value={
-            user?.dateOfBirth
-              ? new Date(user.dateOfBirth).toDateString()
-              : "Not set"
-          }
-        />
-        <InfoRow
-          label="Languages"
-          value={user?.languages?.join(", ") || "Not added"}
-        />
-        <InfoRow
-          label="Verification"
-          value={user?.isVerified ? "Verified" : "Not Verified"}
-        />
+        <InfoRow label="Gender">
+          {user?.gender || "Not set"}
+        </InfoRow>
+
+        <InfoRow label="Date of Birth">
+          {!isEditing ? (
+            dob ? new Date(dob).toDateString() : "Not set"
+          ) : (
+            <input
+              type="date"
+              value={dob}
+              onChange={(e) => setDob(e.target.value)}
+              className="bg-black/30 border border-white/20 rounded-lg px-3 py-1 text-white text-sm"
+            />
+          )}
+        </InfoRow>
+
+        <InfoRow label="Languages">
+          {!isEditing ? (
+            languages.length ? languages.join(", ") : "Not added"
+          ) : (
+            <div className="flex flex-col gap-2 items-end">
+              {languages.map((lang, i) => (
+                <input
+                  key={i}
+                  value={lang}
+                  onChange={(e) => updateLanguage(i, e.target.value)}
+                  className="bg-black/30 border border-white/20 rounded-lg px-3 py-1 text-white text-sm w-44"
+                />
+              ))}
+              {languages.length < 3 && (
+                <button
+                  onClick={addLanguage}
+                  className="text-xs text-purple-400"
+                >
+                  + Add language
+                </button>
+              )}
+            </div>
+          )}
+        </InfoRow>
+
+        <InfoRow label="Verification">
+          <span className="text-green-400 font-medium">
+            Verified
+          </span>
+        </InfoRow>
       </div>
     </div>
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function InfoRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex items-center justify-between px-6 md:px-8 py-4">
+    <div className="flex justify-between items-center px-6 md:px-8 py-4">
       <span className="text-white/50 text-sm">{label}</span>
-      <span className="text-white text-sm font-medium">{value}</span>
+      <span className="text-white text-sm">{children}</span>
     </div>
   );
 }
 
 /* ======================================================
-   WALLET – Fintech style metrics
+   WALLET
 ====================================================== */
 
 function WalletSection({ user }: any) {
@@ -188,7 +267,7 @@ function WalletMetric({
   accent: string;
 }) {
   return (
-    <div className="relative rounded-2xl overflow-hidden bg-[#0f0f14] border border-white/10">
+    <div className="relative rounded-2xl bg-[#0f0f14] border border-white/10 overflow-hidden">
       <div className={`absolute inset-0 bg-gradient-to-br ${accent} opacity-15`} />
       <div className="relative p-6">
         <p className="text-white/60 text-sm">{title}</p>
@@ -199,26 +278,18 @@ function WalletMetric({
 }
 
 /* ======================================================
-   ACTION ZONE – Clearly separated & safe
+   ACTION ZONE
 ====================================================== */
 
 function ActionZone({ logout }: { logout: () => void }) {
   return (
     <div className="rounded-2xl bg-[#0b0b0e] border border-red-500/20 p-6 md:p-8">
-      <div className="flex flex-col sm:flex-row gap-4 justify-end">
-        <button
-          onClick={() => alert("Edit profile coming soon")}
-          className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white flex items-center justify-center gap-2 transition"
-        >
-          {/* <IoPencil className="w-5 h-5" /> */}
-          Wallet
-        </button>
-
+      <div className="flex justify-end">
         <button
           onClick={logout}
-          className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white flex items-center justify-center gap-2 transition"
+          className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white flex items-center gap-2"
         >
-          <IoLogOutOutline className="w-5 h-5" />
+          <IoLogOutOutline />
           Logout
         </button>
       </div>
