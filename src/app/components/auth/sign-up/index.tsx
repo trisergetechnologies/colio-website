@@ -1,297 +1,210 @@
-// components/auth/SignUp.tsx
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import colors from "@/constants/colors";
+import { dancingScript } from "@/app/layout";
 import SocialSignUp from "../SocialSignUp";
-import Logo from "../../layout/header/logo";
-import Loader from "../../shared/Loader";
 import { useAuth } from "@/context/AuthContext";
-import colors, { gradientStyles } from "@/constants/colors";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.colio.in/api";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.colio.in/api";
 
-export default function SignUp() {
+export default function Signup() {
   const router = useRouter();
-  const { saveAuthData } = useAuth();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ [k: string]: string }>({});
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const {saveAuthData} = useAuth();
 
-  const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
-  const isValidPhone = (s: string) => /^[0-9]{10}$/.test(s.trim());
-
-  const showToast = (m: string) => toast(m);
-
-  const clearError = (key: string) => setErrors((p) => { const c = { ...p }; delete c[key]; return c; });
-  const setError = (key: string, msg: string) => setErrors((p) => ({ ...p, [key]: msg }));
-
-  const handleSubmit = async (e?: React.FormEvent) => {
+  const handleSignup = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    setErrors({});
-
-    // validations (same rules as mobile)
-    if (!name || name.trim().length < 2) {
-      setError("name", "Name must be at least 2 characters");
-      return;
-    }
-
-    if (!email && !phone) {
-      setError("email", "Provide email or phone");
-      setError("phone", "Provide email or phone");
-      return;
-    }
-
-    if (email && !isValidEmail(email)) {
-      setError("email", "Invalid email");
-      return;
-    }
-
-    if (phone && !isValidPhone(phone)) {
-      setError("phone", "Phone must be 10 digits");
-      return;
-    }
-
-    if (!password || password.length < 6) {
-      setError("password", "Password must be at least 6 characters");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("confirmPassword", "Passwords must match");
-      return;
-    }
 
     try {
       setLoading(true);
 
-      const registrationType: "email" | "phone" = email && email.trim() !== "" ? "email" : "phone";
-
-      const payload: any = {
+      const payload = {
         name: name.trim(),
-        role: "customer",
-        registrationType,
+        email: email.trim().toLowerCase(),
+        phone,
         password,
+        role: "customer",
       };
 
-      if (registrationType === "email") {
-        payload.email = email.trim().toLowerCase();
-        if (phone && phone.trim() !== "") payload.phone = phone.trim();
-      } else {
-        payload.phone = phone.trim();
-        if (email && email.trim() !== "") payload.email = email.trim().toLowerCase();
-      }
-
-      const url = `${API_BASE_URL}/auth/register`;
-      const res = await axios.post(url, payload);
+      const res = await axios.post(`${API_BASE_URL}/auth/register`, payload);
 
       if (res.data?.success && res.data?.data) {
         await saveAuthData(res.data.data);
-        showToast(res.data?.message || "Registration successful!");
+        toast("Account created successfully!");
         router.replace("/home");
       } else {
-        showToast(res.data?.message || "Registration failed");
+        toast(res.data?.message || "Signup failed");
       }
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || "Registration failed";
-      showToast(msg);
-      console.error("Register error:", err);
+      toast(err?.response?.data?.message || "Signup failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        padding: "78px 20px",
-        boxSizing: "border-box",
-        ...gradientStyles.background,
-        color: colors.white,
-        
-      }}
-    >
-      {/* Toaster */}
-      <Toaster position="top-right" toastOptions={{ style: { background: "#111", color: "#fff" } }} />
+    <div className="relative min-h-screen lg:pt-[120px] flex justify-center text-white">
+      {/* PAGE BACKGROUND */}
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-20"
+        style={{
+          backgroundImage:
+            "url(https://images.unsplash.com/photo-1529156069898-49953e39b3ac)",
+        }}
+      />
+      <div className="absolute inset-0 bg-black/70" />
 
-      <div className="max-w-3xl mx-auto">
+      <Toaster position="top-right" />
 
-
-        {/* Card */}
+      {/* CONTENT */}
+      <div className="relative z-10 w-full flex justify-center">
+        {/* AUTH CARD */}
         <div
-          style={{
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.06)",
-            borderRadius: 14,
-            padding: 22,
-            boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
-          }}
+          className="
+            relative
+            w-full
+            min-h-screen sm:min-h-0
+            sm:max-w-md
+            lg:max-w-[520px]
+            xl:max-w-[760px]
+            lg:h-[520px]
+            xl:h-[620px]
+            rounded-none sm:rounded-2xl
+            overflow-hidden
+            shadow-2xl
+          "
         >
-          {/* Logo */}
-          <div className="mb-8 text-center">
-            <div className="inline-block" style={{ maxWidth: 160 }}>
-              <Logo />
-            </div>
-          </div>
+          {/* CARD BG */}
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage:
+                "url(https://images.unsplash.com/photo-1529156069898-49953e39b3ac)",
+            }}
+          />
 
-
-          {/* Form */}
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <input
-                type="text"
-                name="name"
-                value={name}
-                onChange={(e) => { setName(e.target.value); clearError("name"); }}
-                placeholder="Name"
-                required
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  background: "transparent",
-                  color: colors.white,
-                  outline: "none",
-                }}
-              />
-              {errors.name && <div className="text-sm mt-2" style={{ color: colors.error }}>{errors.name}</div>}
-            </div>
-
-            <div className="mb-4">
-              <input
-                type="email"
-                name="email"
-                value={email}
-                onChange={(e) => { setEmail(e.target.value); clearError("email"); }}
-                placeholder="Email"
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  background: "transparent",
-                  color: colors.white,
-                  outline: "none",
-                }}
-              />
-              {errors.email && <div className="text-sm mt-2" style={{ color: colors.error }}>{errors.email}</div>}
-            </div>
-
-            <div className="mb-4">
-              <input
-                type="tel"
-                name="phone"
-                value={phone}
-                onChange={(e) => { setPhone(e.target.value.replace(/[^0-9]/g, "")); clearError("phone"); }}
-                placeholder="Phone (10 digits)"
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  background: "transparent",
-                  color: colors.white,
-                  outline: "none",
-                }}
-              />
-              {errors.phone && <div className="text-sm mt-2" style={{ color: colors.error }}>{errors.phone}</div>}
-            </div>
-
-            <div className="mb-4">
-              <input
-                type="password"
-                name="password"
-                value={password}
-                onChange={(e) => { setPassword(e.target.value); clearError("password"); }}
-                placeholder="Password"
-                required
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  background: "transparent",
-                  color: colors.white,
-                  outline: "none",
-                }}
-              />
-              {errors.password && <div className="text-sm mt-2" style={{ color: colors.error }}>{errors.password}</div>}
-            </div>
-
-            <div className="mb-6">
-              <input
-                type="password"
-                name="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => { setConfirmPassword(e.target.value); clearError("confirmPassword"); }}
-                placeholder="Confirm Password"
-                required
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  background: "transparent",
-                  color: colors.white,
-                  outline: "none",
-                }}
-              />
-              {errors.confirmPassword && <div className="text-sm mt-2" style={{ color: colors.error }}>{errors.confirmPassword}</div>}
-            </div>
-
-            <div className="mb-6">
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: 10,
-                  border: "none",
-                  cursor: loading ? "not-allowed" : "pointer",
-                  ...gradientStyles.button,
-                  color: colors.white,
-                  fontWeight: 600,
-                }}
-              >
-                {loading ? <Loader /> : "Sign Up"}
-              </button>
-            </div>
-          </form>
-
-          {/* OR Divider */}
-          <div className="flex items-center my-4">
-            <div className="flex-1 h-[1px]" style={{ background: "rgba(255,255,255,0.12)" }} />
-            <div className="px-4 text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>OR</div>
-            <div className="flex-1 h-[1px]" style={{ background: "rgba(255,255,255,0.12)" }} />
-          </div>
-
-          {/* Social Sign Up */}
-          <div className="mb-6">
-            <SocialSignUp />
-          </div>
-
-          <div style={{ color: "rgba(255,255,255,0.8)" }}>
-            <p className="text-sm mb-2">By creating an account you agree with our{' '}
-              <a href="/#" style={{ color: colors.button.start, textDecoration: "underline" }}>Privacy</a> and{' '}
-              <a href="/#" style={{ color: colors.button.start, textDecoration: "underline" }}>Policy</a>
+          {/* HEADER */}
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20 text-center">
+            <h1 onClick={()=> router.push('/')} className={`text-5xl pt-3 ${dancingScript.className}`}>
+              Colio
+            </h1>
+            <p className="mt-1 text-sm text-white/70 tracking-wide">
+              Create your account
             </p>
+          </div>
 
-            <p className="text-sm">
-              Already have an account?{" "}
-              <button onClick={() => router.push("/signin")} style={{ background: "transparent", border: "none", color: colors.button.start, cursor: "pointer" }}>
-                Sign In
-              </button>
-            </p>
+          <div className="absolute inset-0 bg-black/65" />
+
+          {/* BODY */}
+          <div className="relative z-10 h-full flex items-center justify-center px-6 sm:px-8">
+            <div className="w-full max-w-md flex flex-col items-center">
+              {/* SOCIAL */}
+              {!showEmailForm && (
+                <>
+                  <div
+                    className="
+                      w-full
+                      [&>button]:w-full
+                      [&>button]:py-3
+                      [&>button]:rounded-xl
+                      [&>button]:text-sm
+                    "
+                  >
+                    <SocialSignUp />
+                  </div>
+
+                  <button
+                    onClick={() => setShowEmailForm(true)}
+                    className="
+                      mt-4
+                      w-full
+                      rounded-xl
+                      border border-white/20
+                      bg-white/10
+                      py-3
+                      text-sm font-medium
+                      hover:bg-white/15
+                      transition
+                    "
+                  >
+                    Sign up with Email
+                  </button>
+                </>
+              )}
+
+              {/* FORM */}
+              {showEmailForm && (
+                <form onSubmit={handleSignup} className="w-full space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Full name"
+                      className="rounded-xl border border-white/20 bg-transparent px-4 py-3 outline-none"
+                    />
+
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Phone"
+                      className="rounded-xl border border-white/20 bg-transparent px-4 py-3 outline-none"
+                    />
+                  </div>
+
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email address"
+                    className="w-full rounded-xl border border-white/20 bg-transparent px-4 py-3 outline-none"
+                  />
+
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Create password"
+                    className="w-full rounded-xl border border-white/20 bg-transparent px-4 py-3 outline-none"
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full rounded-xl py-3 font-semibold"
+                    style={{
+                      background:
+                        "linear-gradient(135deg,#8F87F1,#C68EFD)",
+                    }}
+                  >
+                    {loading ? "Creating account..." : "Create Account"}
+                  </button>
+                </form>
+              )}
+
+              {/* FOOTER */}
+              <div className="mt-6 w-full flex justify-center text-sm">
+                <span className="text-white/70">Already have an account?</span>
+                <button
+                  onClick={() => router.push("/signin")}
+                  className="ml-2 text-purple-300 hover:underline"
+                >
+                  Sign In
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

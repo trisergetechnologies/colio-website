@@ -9,9 +9,9 @@ export const metadata = {
 export default function Page() {
   return (
     <div>
-      <Header/>
+      {/* <Header/> */}
       <SignupPageClient />
-      <Footer/>
+      {/* <Footer/> */}
     </div>
   );
 }

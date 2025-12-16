@@ -1,10 +1,19 @@
 import React from 'react'
 import { getGoogleOAuthURL } from '@/lib/utils/googleClient'
+import toast from 'react-hot-toast';
+
+
 const SocialSignIn = () => {
 
-    const handleGoogleLogin = () => {
-      window.location.href = getGoogleOAuthURL();
-    };
+  const handleGoogleLogin = () => {
+    try {
+      const googleAuthURL = getGoogleOAuthURL();
+      window.location.href = googleAuthURL;
+    } catch (error) {
+      console.error("Failed to initiate Google sign-in:", error);
+      toast.error("Failed to connect to Google. Please try again");
+    }
+  };
 
   return (
     <>

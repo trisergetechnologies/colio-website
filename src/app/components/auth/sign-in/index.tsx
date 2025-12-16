@@ -94,7 +94,7 @@ export default function Signin() {
 
           {/* TOP TITLE */}
           <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20 text-center">
-            <h1 className={`text-5xl pt-3 ${dancingScript.className}`}>
+            <h1 onClick={()=> router.push('/')} className={`text-5xl pt-3 ${dancingScript.className}`}>
               Colio
             </h1>
             <p className="mt-1 text-sm text-white/70 tracking-wide">
