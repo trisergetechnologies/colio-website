@@ -10,6 +10,8 @@ import Logo from "./logo";
 import HeaderLink from "./navigation/HeaderLink";
 import { dancingScript } from "@/app/layout";
 import { Coins } from "lucide-react";
+import { useChat } from "@/context/ChatContext";
+import { IoChatbubbles } from "react-icons/io5";
 
 import {
   IoLogIn,
@@ -35,6 +37,7 @@ export default function Header() {
 
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated } = useAuth();
+  const { unreadCount } = useChat();
 
   const walletBalance = 140;
 
@@ -140,6 +143,34 @@ export default function Header() {
               </a>
             )}
 
+            {/* CHAT (DESKTOP) */}
+            {isAuthenticated && (
+              <Link
+                href="/chat"
+                className="hidden lg:flex items-center gap-2 px-5 py-3
+               rounded-[16px] border border-white/20
+               bg-white/10 backdrop-blur-md
+               text-white font-semibold
+               hover:bg-white/20 transition-all hover:scale-105
+               relative group"
+              >
+                <IoChatbubbles className="text-xl text-pink-400 group-hover:text-pink-300 transition-colors" />
+                <span className="text-sm">Chat</span>
+
+                {/* Unread Badge */}
+                {unreadCount > 0 && (
+                  <span className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5
+                       flex items-center justify-center
+                       text-[10px] font-bold text-white
+                       bg-gradient-to-r from-pink-500 to-purple-600
+                       rounded-full shadow-lg shadow-pink-500/30
+                       animate-pulse">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </Link>
+            )}
+
             {/* ACCOUNT (DESKTOP) */}
             <Link
               href={isAuthenticated ? "../profile" : "../signin"}
@@ -218,6 +249,31 @@ export default function Header() {
             </motion.div>
           </>
         )}
+
+        {/* MOBILE CHAT */}
+        {isAuthenticated && (
+          <Link
+            href="/chat"
+            className="lg:hidden flex items-center justify-center
+               w-10 h-10 rounded-full
+               border border-white/20
+               bg-white/10 backdrop-blur-md
+               text-white relative"
+          >
+            <IoChatbubbles className="text-lg text-pink-400" />
+
+            {/* Unread Badge */}
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1
+                       flex items-center justify-center
+                       text-[9px] font-bold text-white
+                       bg-gradient-to-r from-pink-500 to-purple-600
+                       rounded-full">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </Link>
+        )}
       </AnimatePresence>
 
       {/* ================= MOBILE MENU ================= */}
@@ -267,6 +323,22 @@ export default function Header() {
                   <Link href={isAuthenticated ? "../profile" : "../signin"} onClick={() => setNavbarOpen(false)}>
                     {isAuthenticated ? "Account" : "Sign In"}
                   </Link>
+                  {/* Inside the mobile menu nav */}
+                  {isAuthenticated && (
+                    <Link
+                      href="/chat"
+                      onClick={() => setNavbarOpen(false)}
+                      className="flex items-center gap-3"
+                    >
+                      <IoChatbubbles className="text-pink-400" />
+                      <span>Messages</span>
+                      {unreadCount > 0 && (
+                        <span className="px-2 py-0.5 text-xs font-bold text-white bg-pink-500 rounded-full">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </Link>
+                  )}
                 </nav>
               </div>
 

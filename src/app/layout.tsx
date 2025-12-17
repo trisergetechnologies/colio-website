@@ -5,6 +5,7 @@ import ScrollToTop from './components/scroll-to-top'
 import { AuthProvider } from '@/context/AuthContext'
 import { CallProvider } from '@/context/CallContext'
 import CallManager from './components/call/CallManager'
+import { ChatProvider } from '@/context/ChatContext'
 const font = Inter({ subsets: ['latin'] })
 
 export const dancingScript = Dancing_Script({
@@ -21,16 +22,18 @@ export default function RootLayout({
     <html lang='en' suppressHydrationWarning>
       <AuthProvider>
         <CallProvider>
-        <body className={`${font.className}`}>
+          <ChatProvider>
+            <body className={`${font.className}`}>
 
-          <Aoscompo>
+              <Aoscompo>
 
-            {children}
-            <CallManager />
+                {children}
+                <CallManager />
 
-          </Aoscompo>
-          <ScrollToTop />
-        </body>
+              </Aoscompo>
+              <ScrollToTop />
+            </body>
+          </ChatProvider>
         </CallProvider>
       </AuthProvider>
     </html> 
