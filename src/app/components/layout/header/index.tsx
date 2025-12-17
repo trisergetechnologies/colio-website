@@ -123,6 +123,31 @@ export default function Header() {
                 <span className="text-sm">{walletBalance}</span>
               </button>
             )}
+            {/* MOBILE CHAT */}
+            {isAuthenticated && (
+              <Link
+                href="/chat"
+                className="lg:hidden flex items-center justify-center
+               w-10 h-10 rounded-[14px]
+               border border-white/20
+               bg-white/10 backdrop-blur-md
+               text-white relative
+               hover:bg-white/20 transition"
+              >
+                <IoChatbubbles className="text-lg text-pink-400" />
+
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1
+                   flex items-center justify-center
+                   text-[9px] font-bold text-white
+                   bg-gradient-to-r from-pink-500 to-purple-600
+                   rounded-full">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </Link>
+            )}
+
 
             {/* DESKTOP WALLET */}
             {isAuthenticated && (
@@ -248,31 +273,6 @@ export default function Header() {
               <WalletPopover onClose={() => setIsWalletOpen(false)} />
             </motion.div>
           </>
-        )}
-
-        {/* MOBILE CHAT */}
-        {isAuthenticated && (
-          <Link
-            href="/chat"
-            className="lg:hidden flex items-center justify-center
-               w-10 h-10 rounded-full
-               border border-white/20
-               bg-white/10 backdrop-blur-md
-               text-white relative"
-          >
-            <IoChatbubbles className="text-lg text-pink-400" />
-
-            {/* Unread Badge */}
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1
-                       flex items-center justify-center
-                       text-[9px] font-bold text-white
-                       bg-gradient-to-r from-pink-500 to-purple-600
-                       rounded-full">
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </span>
-            )}
-          </Link>
         )}
       </AnimatePresence>
 
