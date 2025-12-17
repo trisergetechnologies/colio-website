@@ -26,10 +26,21 @@ export default function Signin() {
 
     try {
       setLoading(true);
+
+      const trimmedIdentifier = identifier.trim();
+
+      const loginType = trimmedIdentifier.includes("@")
+        ? "email"
+        : "phone";
+
       const payload = {
-        identifier: identifier.trim().toLowerCase(),
+        identifier:
+          loginType === "email"
+            ? trimmedIdentifier.toLowerCase()
+            : trimmedIdentifier,
         password,
         role: "customer",
+        loginType,
       };
 
       const res = await axios.post(
@@ -50,6 +61,7 @@ export default function Signin() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="relative min-h-screen  lg:pt-[120px] flex justify-center text-white">

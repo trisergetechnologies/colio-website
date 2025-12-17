@@ -264,8 +264,8 @@ export default function Header() {
                   <Link href="/#features" onClick={() => setNavbarOpen(false)}>
                     Features
                   </Link>
-                  <Link href="/profile" onClick={() => setNavbarOpen(false)}>
-                    Account
+                  <Link href={isAuthenticated ? "../profile" : "../signin"} onClick={() => setNavbarOpen(false)}>
+                    {isAuthenticated ? "Account" : "Sign In"}
                   </Link>
                 </nav>
               </div>
