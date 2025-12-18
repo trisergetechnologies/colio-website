@@ -30,11 +30,20 @@ export default function GoogleCallback() {
   const { saveAuthData } = useAuth();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const hasRun = useRef(false);
 
   useEffect(() => {
     if (hasRun.current) return;
     hasRun.current = true;
+
+    // Detect if opened from mobile app
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const isMobileApp = userAgent.includes("expo") || 
+                        userAgent.includes("android") && !userAgent.includes("chrome") ||
+                        userAgent.includes("iphone") && !userAgent.includes("safari");
+    
+    setIsMobile(isMobileApp);
 
     const handleGoogleCallback = async () => {
       try {
@@ -42,14 +51,9 @@ export default function GoogleCallback() {
         const code = url.searchParams.get("code");
         const error = url.searchParams.get("error");
 
-        // Handle OAuth errors
         if (error) {
-          // Check if opened from mobile app
-          const isMobileApp = window.navigator.userAgent.includes("Expo");
-          
           if (isMobileApp) {
-            // Redirect back to app with error
-            window.location.href = `https://colio.in/?error=${encodeURIComponent("Google sign-in was cancelled or failed")}`;
+            window.location.href = `colio://google/callback?error=${encodeURIComponent("Google sign-in failed")}`;
             return;
           }
 
@@ -64,7 +68,6 @@ export default function GoogleCallback() {
           return;
         }
 
-        // Send code to backend
         const response = await axios.get<GoogleAuthResponse>(
           `${API_BASE_URL}/auth/google/oauth?code=${code}`,
           { timeout: 10000 }
@@ -73,30 +76,29 @@ export default function GoogleCallback() {
         if (response.data.success && response.data.data) {
           const { accessToken, ...userData } = response.data.data;
 
-          // Check if opened from mobile app
-          const isMobileApp = window.navigator.userAgent.includes("Expo");
-
           if (isMobileApp) {
-            // Redirect back to app with token and user data
+            // Redirect to app with deep link
             const userDataString = encodeURIComponent(JSON.stringify(userData));
-            window.location.href = `https://colio.in/?token=${accessToken}&userData=${userDataString}`;
+            const deepLink = `colio://google/callback?token=${accessToken}&userData=${userDataString}`;
+            
+            console.log("Redirecting to app with deep link");
+            window.location.href = deepLink;
+            
+            // Show success message briefly before redirect
+            toast.success("Returning to app...");
             return;
           }
 
           // Regular web flow
           await saveAuthData(response.data.data);
           toast.success(response.data.message || "Sign in successful!");
-
-          setTimeout(() => {
-            router.replace("/");
-          }, 1000);
+          setTimeout(() => router.replace("/"), 1000);
         } else {
           toast.error(response.data.message || "Authentication failed");
           setTimeout(() => router.replace("/signin"), 2000);
         }
       } catch (err: any) {
         console.error("Google OAuth error:", err);
-
         const errorMessage =
           err?.response?.data?.message ||
           "Something went wrong. Please try again";
@@ -125,15 +127,22 @@ export default function GoogleCallback() {
           {isProcessing ? (
             <>
               <div style={styles.spinner} />
-              <h2 style={styles.title}>Signing you in</h2>
+              <h2 style={styles.title}>
+                {isMobile ? "Signing you in" : "Signing you in"}
+              </h2>
               <p style={styles.subtitle}>
-                Please wait while we securely connect your Google account.
+                {isMobile 
+                  ? "Please wait, we'll return you to the app shortly..."
+                  : "Please wait while we securely connect your Google account."
+                }
               </p>
             </>
           ) : (
             <>
               <div style={styles.checkmark}>✓</div>
-              <h2 style={styles.title}>Redirecting...</h2>
+              <h2 style={styles.title}>
+                {isMobile ? "Returning to app..." : "Redirecting..."}
+              </h2>
             </>
           )}
         </div>
