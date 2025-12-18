@@ -30,10 +30,9 @@ export default function GoogleCallback() {
   const { saveAuthData } = useAuth();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(true);
-  const hasRun = useRef(false); // Prevent double execution
+  const hasRun = useRef(false);
 
   useEffect(() => {
-    // Prevent multiple executions in React Strict Mode
     if (hasRun.current) return;
     hasRun.current = true;
 
@@ -45,6 +44,15 @@ export default function GoogleCallback() {
 
         // Handle OAuth errors
         if (error) {
+          // Check if opened from mobile app
+          const isMobileApp = window.navigator.userAgent.includes("Expo");
+          
+          if (isMobileApp) {
+            // Redirect back to app with error
+            window.location.href = `https://colio.in/?error=${encodeURIComponent("Google sign-in was cancelled or failed")}`;
+            return;
+          }
+
           toast.error("Google sign-in was cancelled or failed");
           setTimeout(() => router.replace("/signin"), 2000);
           return;
@@ -56,23 +64,31 @@ export default function GoogleCallback() {
           return;
         }
 
-        // Send code to backend (only once)
+        // Send code to backend
         const response = await axios.get<GoogleAuthResponse>(
           `${API_BASE_URL}/auth/google/oauth?code=${code}`,
-          { timeout: 10000 } // 10 second timeout
+          { timeout: 10000 }
         );
 
         if (response.data.success && response.data.data) {
+          const { accessToken, ...userData } = response.data.data;
+
+          // Check if opened from mobile app
+          const isMobileApp = window.navigator.userAgent.includes("Expo");
+
+          if (isMobileApp) {
+            // Redirect back to app with token and user data
+            const userDataString = encodeURIComponent(JSON.stringify(userData));
+            window.location.href = `https://colio.in/?token=${accessToken}&userData=${userDataString}`;
+            return;
+          }
+
+          // Regular web flow
           await saveAuthData(response.data.data);
           toast.success(response.data.message || "Sign in successful!");
-          
-          // Redirect based on user status
+
           setTimeout(() => {
-            if (!response.data.data?.isPhoneVerified) {
-              router.replace("/");
-            } else {
-              router.replace("/");
-            }
+            router.replace("/");
           }, 1000);
         } else {
           toast.error(response.data.message || "Authentication failed");
@@ -80,11 +96,11 @@ export default function GoogleCallback() {
         }
       } catch (err: any) {
         console.error("Google OAuth error:", err);
-        
+
         const errorMessage =
           err?.response?.data?.message ||
           "Something went wrong. Please try again";
-        
+
         toast.error(errorMessage);
         setTimeout(() => router.replace("/signin"), 2000);
       } finally {
@@ -93,7 +109,7 @@ export default function GoogleCallback() {
     };
 
     handleGoogleCallback();
-  }, []); // Empty dependency array - run once only
+  }, []);
 
   return (
     <>
