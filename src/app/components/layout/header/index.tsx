@@ -36,10 +36,13 @@ export default function Header() {
   const walletPopoverRef = useRef<HTMLDivElement>(null);
 
   const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+
   const { unreadCount } = useChat();
 
-  const walletBalance = 140;
+  const walletBalance =
+    (user?.wallet?.main ?? 0) + (user?.wallet?.bonus ?? 0);
+
 
   const handleScroll = () => setSticky(window.scrollY >= 20);
 
@@ -79,11 +82,10 @@ export default function Header() {
         initial={{ y: -80 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className={`fixed top-0 z-50 w-full transition-all duration-500 ${
-          sticky
+        className={`fixed top-0 z-50 w-full transition-all duration-500 ${sticky
             ? "backdrop-blur-xl bg-[#0f0f11]/80 shadow-[0_8px_25px_-8px_rgba(217,70,239,0.25)] py-4"
             : "py-6"
-        }`}
+          }`}
       >
         <div className="container flex items-center justify-between">
           {/* <Logo /> */}
@@ -164,7 +166,7 @@ export default function Header() {
                            hover:bg-white/20 transition-all hover:scale-105"
               >
                 <Coins size={24} color="#EAB308" strokeWidth={2.2} />
-                <span className="text-sm">₹{walletBalance}</span>
+                <span className="text-sm">{walletBalance}</span>
               </a>
             )}
 

@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import { IoClose, IoCashOutline } from "react-icons/io5";
 import { Coins } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+
 
 type WalletPopoverProps = {
   onClose?: () => void;
@@ -19,7 +21,12 @@ const coinPacks = [
   { id: 8, coins: 14100, originalPrice: 29709, price: 19291 },
 ];
 
+
 export default function WalletPopover({ onClose }: WalletPopoverProps) {
+  const { user } = useAuth();
+
+const walletCoins =
+  (user?.wallet?.main ?? 0) + (user?.wallet?.bonus ?? 0);
   return (
     <motion.div
       initial={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -40,13 +47,18 @@ export default function WalletPopover({ onClose }: WalletPopoverProps) {
         mt-2
       "
     >
+
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
         <div>
           <h3 className="text-lg font-semibold text-white">Coin Store</h3>
           <p className="text-sm text-white/60">
-            My Coins: <span className="text-[#f0abfc] font-medium">0</span>
+            My Coins:{" "}
+            <span className="text-[#f0abfc] font-medium">
+              {walletCoins}
+            </span>
           </p>
+
         </div>
 
         <button
@@ -67,10 +79,9 @@ export default function WalletPopover({ onClose }: WalletPopoverProps) {
             className={`
               relative w-full flex items-center justify-between
               gap-4 px-4 py-4 rounded-2xl border
-              ${
-                pack.highlight
-                  ? "border-[#f0abfc]/40 bg-gradient-to-r from-[#2a0a1f] to-[#3b0a2b]"
-                  : "border-white/10 bg-white/5"
+              ${pack.highlight
+                ? "border-[#f0abfc]/40 bg-gradient-to-r from-[#2a0a1f] to-[#3b0a2b]"
+                : "border-white/10 bg-white/5"
               }
               backdrop-blur-xl transition-all
             `}
@@ -84,7 +95,7 @@ export default function WalletPopover({ onClose }: WalletPopoverProps) {
 
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center">
-               <Coins size={18} color="#EAB308" strokeWidth={2.2} />
+                <Coins size={18} color="#EAB308" strokeWidth={2.2} />
               </div>
               <div>
                 <p className="text-white font-semibold text-lg">{pack.coins}</p>
