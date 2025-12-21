@@ -1,4 +1,3 @@
-// app/(private)/chat/page.tsx
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
@@ -7,6 +6,33 @@ import Image from 'next/image';
 import { getConversations, Conversation } from '@/lib/api/chat';
 import { useChat } from '@/context/ChatContext';
 import { useCall } from '@/context/CallContext';
+
+// --- ICONS ---
+const PhoneIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className="w-5 h-5"
+  >
+    <path
+      fillRule="evenodd"
+      d="M1.5 4.5a3 3 0 0 1 3-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 0 1-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 0 0 6.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 0 1 1.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 0 1-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 5.25V4.5Z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
+const VideoIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className="w-5 h-5"
+  >
+    <path d="M4.5 4.5a3 3 0 0 0-3 3v9a3 3 0 0 0 3 3h8.25a3 3 0 0 0 3-3v-9a3 3 0 0 0-3-3H4.5ZM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06Z" />
+  </svg>
+);
 
 export default function ChatListPage() {
   const router = useRouter();
@@ -266,29 +292,32 @@ export default function ChatListPage() {
                     </div>
                   </div>
 
-                  {/* Call buttons */}
-                  <div className="hidden group-hover:flex items-center gap-2">
+                  {/* Call buttons - ALWAYS VISIBLE */}
+                  {/* Added shrink-0 to prevent buttons from squashing */}
+                  <div className="flex items-center gap-3 pl-2 shrink-0">
+                    
+                    {/* Audio Call Button */}
                     <button
-                      onClick={(e) =>
-                        handleVoiceCall(e, conv)
-                      }
-                      className="p-2 rounded-full bg-green-500/20 hover:bg-green-500/30 transition-colors"
+                      onClick={(e) => handleVoiceCall(e, conv)}
+                      className="p-2.5 rounded-full bg-white/5 text-white/70 hover:text-white hover:bg-white/15 transition-all duration-200 border border-white/5"
                       title="Voice Call"
                     >
-                      <span className="text-green-400">
-                        📞
-                      </span>
+                      <PhoneIcon />
                     </button>
+
+                    {/* Video Call Button with Magic Pop Animation */}
                     <button
-                      onClick={(e) =>
-                        handleVideoCall(e, conv)
-                      }
-                      className="p-2 rounded-full bg-green-500/20 hover:bg-green-500/30 transition-colors"
+                      onClick={(e) => handleVideoCall(e, conv)}
+                      className="relative group/btn p-2.5 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-[0_0_15px_rgba(236,72,153,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] hover:scale-110 transition-all duration-300"
                       title="Video Call"
                     >
-                      <span className="text-green-400">
-                        📹
-                      </span>
+                        {/* Radar/Ping Effect */}
+                        <span className="absolute -inset-1 rounded-full bg-pink-500 opacity-30 animate-ping group-hover/btn:opacity-50"></span>
+                        
+                        {/* Icon Container */}
+                        <span className="relative z-10 block animate-[bounce_2s_infinite]">
+                            <VideoIcon />
+                        </span>
                     </button>
                   </div>
                 </div>

@@ -28,19 +28,41 @@ interface FloatingNotification {
 }
 
 // ============================================
+// ICONS (WhatsApp Style)
+// ============================================
+
+const MicIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+  </svg>
+);
+
+const MicOffIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+    <path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17l1-1C15.98 10.2 16 10.1 16 10h2c0-3.53-2.61-6.43-6-6.92V3.08C12 3.03 12 3 12 3c-.03 0-.05.01-.08.01V1.3L10.2 3.01l.01.01-1.62 1.62C7.94 5.3 7.5 6.11 7.23 7H9c.2-.95.84-1.74 1.7-2.17l3.28 3.28v2.06zM12 14c.26 0 .5-.05.73-.12l6.56 6.56 1.41-1.41L2.81 2.81 1.39 4.22l5.72 5.72C7.05 10.32 7 10.66 7 11H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c1.37-.2 2.63-.78 3.69-1.62l-1.47-1.47c-.6.38-1.32.65-2.22.84V14z" />
+  </svg>
+);
+
+// ============================================
 // COMPONENT
 // ============================================
 
 export default function ActiveCallModal() {
   const { callState, setCallStage, endCall, setError } = useCall();
 
+  // ============================================
+  // HELPER: ROBUST USER ID FETCHING
+  // This logic is inspired by your RN code's "user?.userId" check
+  // ============================================
   const getCurrentUserId = (): string => {
     if (typeof window === 'undefined') return '';
     try {
       const userStr = localStorage.getItem('user');
       if (userStr) {
         const user = JSON.parse(userStr);
-        return user._id || user.id || '';
+        // Check all common ID fields to ensure we get the ID regardless of object structure
+        return user._id || user.id || user.userId || '';
       }
     } catch (e) {
       console.error('[ActiveCall] Error getting user ID:', e);
@@ -92,23 +114,17 @@ export default function ActiveCallModal() {
   // ============================================
 
   useEffect(() => {
+    // Set user ID immediately on mount
     currentUserIdRef.current = getCurrentUserId();
   }, []);
 
-  // 🔔 IMPROVED RINGTONE SETUP
+  // 🔔 RINGTONE SETUP
   useEffect(() => {
-    // Create audio element
     const audio = new Audio('/ringing.mp3');
     audio.loop = true;
     audio.volume = 0.6;
-    
-    // Preload the audio
     audio.preload = 'auto';
     
-    // Add error handler
-  
-
-    // Add canplay handler for debugging
     audio.addEventListener('canplay', () => {
       console.log('[ActiveCall] 🔔 Ringtone ready to play');
     });
@@ -129,33 +145,23 @@ export default function ActiveCallModal() {
     const playRingtone = async () => {
       if (callState.stage === 'ringing' && ringtoneRef.current && !isRingtonePlayingRef.current) {
         try {
-          console.log('[ActiveCall] 🔔 Attempting to play ringtone...');
-          
-          // Try to play
           await ringtoneRef.current.play();
           isRingtonePlayingRef.current = true;
-          console.log('[ActiveCall] 🔔 Ringtone playing successfully');
         } catch (error: any) {
           console.error('[ActiveCall] 🔔 Ringtone play failed:', error);
           
-          // If autoplay is blocked, try again on next user interaction
           if (error.name === 'NotAllowedError') {
-            console.warn('[ActiveCall] 🔔 Autoplay blocked - will retry on user interaction');
-            
-            // Add one-time click listener to start audio
             const handleInteraction = async () => {
               try {
                 if (ringtoneRef.current && callState.stage === 'ringing') {
                   await ringtoneRef.current.play();
                   isRingtonePlayingRef.current = true;
-                  console.log('[ActiveCall] 🔔 Ringtone started after user interaction');
                 }
               } catch (e) {
                 console.error('[ActiveCall] 🔔 Still failed:', e);
               }
               document.removeEventListener('click', handleInteraction);
             };
-            
             document.addEventListener('click', handleInteraction, { once: true });
           }
         }
@@ -168,7 +174,6 @@ export default function ActiveCallModal() {
   // 🔔 STOP RINGTONE WHEN CONNECTED
   useEffect(() => {
     if (isConnected && ringtoneRef.current && isRingtonePlayingRef.current) {
-      console.log('[ActiveCall] 🔔 Stopping ringtone (connected)');
       ringtoneRef.current.pause();
       ringtoneRef.current.currentTime = 0;
       isRingtonePlayingRef.current = false;
@@ -204,7 +209,7 @@ export default function ActiveCallModal() {
       chatContainerRef.current.scrollTop =
         chatContainerRef.current.scrollHeight;
     }
-  }, [chatMessages]);
+  }, [chatMessages, showChat]); // Scroll when chat opens too
 
   // ============================================
   // AGORA INITIALIZATION
@@ -217,8 +222,6 @@ export default function ActiveCallModal() {
       agoraClientRef.current = client;
 
       client.onUserJoined((user: any) => {
-        // 🔔 STOP RINGTONE
-        console.log('[ActiveCall] 🔔 User joined - stopping ringtone');
         if (ringtoneRef.current && isRingtonePlayingRef.current) {
           ringtoneRef.current.pause();
           ringtoneRef.current.currentTime = 0;
@@ -267,14 +270,6 @@ export default function ActiveCallModal() {
         }, 500);
       }
     } catch (error: any) {
-      // 🔔 STOP RINGTONE ON ERROR
-      console.log('[ActiveCall] 🔔 Error - stopping ringtone');
-      if (ringtoneRef.current && isRingtonePlayingRef.current) {
-        ringtoneRef.current.pause();
-        ringtoneRef.current.currentTime = 0;
-        isRingtonePlayingRef.current = false;
-      }
-
       setError(error.message || 'Failed to connect to call');
     }
   };
@@ -287,8 +282,6 @@ export default function ActiveCallModal() {
     if (isCleaningUpRef.current) return;
     isCleaningUpRef.current = true;
 
-    // 🔔 STOP RINGTONE
-    console.log('[ActiveCall] 🔔 Cleanup - stopping ringtone');
     if (ringtoneRef.current) {
       ringtoneRef.current.pause();
       ringtoneRef.current.currentTime = 0;
@@ -340,21 +333,17 @@ export default function ActiveCallModal() {
   );
 
   // ============================================
-  // EMOJI FUNCTIONS
+  // EMOJI & CHAT FUNCTIONS
   // ============================================
 
   const startEmojiPolling = () => {
     if (emojiPollRef.current) return;
-
-    console.log('[ActiveCall] 🎭 Starting emoji polling');
     lastEmojiPollTimeRef.current = Date.now();
 
     emojiPollRef.current = setInterval(async () => {
       if (!callState.sessionId) return;
-
       try {
         const result = await pollCallEmojis(callState.sessionId, lastEmojiPollTimeRef.current);
-
         if (result.emojis?.length > 0) {
           const consultantEmojis = result.emojis.filter(e => e.senderType === 'consultant');
           consultantEmojis.forEach(e => {
@@ -370,32 +359,23 @@ export default function ActiveCallModal() {
 
   const handleSendEmoji = async (emoji: string) => {
     showFloatingNotification('emoji', emoji, true);
-
     if (callState.sessionId) {
       try {
         await sendCallEmoji(callState.sessionId, emoji);
-        console.log('[ActiveCall] 🎭 Emoji sent:', emoji);
       } catch (error) {
         console.error('[ActiveCall] Send emoji error:', error);
       }
     }
   };
 
-  // ============================================
-  // CHAT FUNCTIONS
-  // ============================================
-
   const fetchChatMessages = async () => {
     if (!callState.sessionId) return;
-
     try {
-      console.log('[ActiveCall] 💬 Fetching initial chat messages');
       const result = await getInCallMessages(callState.sessionId);
       const messages = result.messages || [];
       setChatMessages(messages);
       messages.forEach(m => processedMessageIds.current.add(m._id));
       lastChatPollTimeRef.current = result.serverTime;
-      console.log('[ActiveCall] 💬 Loaded', messages.length, 'messages');
     } catch (error) {
       console.error('[ActiveCall] Fetch chat error:', error);
     }
@@ -403,29 +383,17 @@ export default function ActiveCallModal() {
 
   const startChatPolling = () => {
     if (chatPollRef.current) return;
-
-    console.log('[ActiveCall] 💬 Starting chat polling');
-
     chatPollRef.current = setInterval(async () => {
       if (!callState.sessionId) return;
-
       try {
         const result = await getInCallMessages(callState.sessionId, lastChatPollTimeRef.current);
-
         if (result.messages?.length > 0) {
           result.messages.forEach(msg => {
             if (!processedMessageIds.current.has(msg._id)) {
               processedMessageIds.current.add(msg._id);
               setChatMessages(prev => [...prev, msg]);
-
-              const isOwn = isOwnMessage(msg);
-              if (!isOwn) {
-                showFloatingNotification(
-                  'message',
-                  msg.content,
-                  false,
-                  callState.consultantName || 'Consultant'
-                );
+              if (!isOwnMessage(msg)) {
+                showFloatingNotification('message', msg.content, false, callState.consultantName || 'Consultant');
               }
             }
           });
@@ -439,19 +407,17 @@ export default function ActiveCallModal() {
 
   const handleSendMessage = async () => {
     if (!chatInput.trim() || !callState.sessionId || isSendingMessage) return;
-
     const content = chatInput.trim();
     setChatInput('');
     setIsSendingMessage(true);
 
     try {
       const result = await sendInCallMessage(callState.sessionId, content, 'text');
-
       if (result?.message) {
         processedMessageIds.current.add(result.message._id);
         setChatMessages(prev => [...prev, result.message]);
-        showFloatingNotification('message', content, true);
-        console.log('[ActiveCall] 💬 Message sent');
+        // Note: No notification needed for own message inside chat panel
+        // showFloatingNotification('message', content, true); 
       }
     } catch (error) {
       console.error('[ActiveCall] Send message error:', error);
@@ -461,11 +427,19 @@ export default function ActiveCallModal() {
     }
   };
 
+  // ============================================
+  // HELPER: MESSAGE OWNERSHIP CHECK
+  // Inspired by your RN code: checks object ID or string ID
+  // ============================================
   const isOwnMessage = (message: Message): boolean => {
     const currentUserId = currentUserIdRef.current;
+    if (!currentUserId) return false;
+
+    // Handle case where sender is an object (populated) or just a string ID
     const senderId = typeof message.sender === 'object'
       ? (message.sender._id?.toString() || '')
       : message.sender?.toString() || '';
+      
     return currentUserId === senderId;
   };
 
@@ -485,31 +459,14 @@ export default function ActiveCallModal() {
     const newMuted = !isMuted;
     await agoraClientRef.current.toggleAudio(newMuted);
     setIsMuted(newMuted);
-    console.log('[ActiveCall] 🎤 Mute:', newMuted);
-  };
-
-  const toggleVideo = async () => {
-    if (!agoraClientRef.current || callState.callType !== 'video' || !isConnected) return;
-    const newEnabled = !isVideoEnabled;
-    await agoraClientRef.current.toggleVideo(newEnabled);
-    setIsVideoEnabled(newEnabled);
-    console.log('[ActiveCall] 📹 Video:', newEnabled);
   };
 
   const handleEndCall = async () => {
-    if (isCleaningUpRef.current) {
-      console.log('[ActiveCall] ⚠️ Already ending call');
-      return;
-    }
-
-    console.log('[ActiveCall] 📞 User ending call...');
-
+    if (isCleaningUpRef.current) return;
     try {
       const token = getToken();
       if (callState.sessionId && token) {
-        console.log('[ActiveCall] Ending backend session...');
         await endCallSession(callState.sessionId, token);
-        console.log('[ActiveCall] ✅ Backend session ended');
       }
     } catch (error) {
       console.error('[ActiveCall] ❌ End call API error:', error);
@@ -519,19 +476,11 @@ export default function ActiveCallModal() {
     }
   };
 
-  // ============================================
-  // HELPERS
-  // ============================================
-
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
-
-  // ============================================
-  // RENDER GUARD
-  // ============================================
 
   if (callState.stage !== 'ringing' && callState.stage !== 'connected') return null;
 
@@ -541,42 +490,55 @@ export default function ActiveCallModal() {
 
   return (
     <div className="fixed inset-0 bg-black z-[10000]">
-      <div className="relative w-full h-full bg-gradient-to-b from-[#1a1a2e] via-[#16213e] to-[#0f3460]">
+      {/* 🌈 COLORFUL GRADIENT BACKGROUND */}
+      <div className="relative w-full h-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 animate-gradient-xy">
         
         {/* REMOTE VIDEO / VOICE BACKGROUND */}
         {callState.callType === 'video' ? (
-          <div id="remote-video" className="w-full h-full bg-black">
+          <div id="remote-video" className="w-full h-full bg-black/20 backdrop-blur-sm">
             {!isConnected && (
-              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#1a1a2e] via-[#16213e] to-[#0f3460]">
-                <div className="w-[140px] h-[140px] rounded-full border-[3px] border-pink-500/50 flex items-center justify-center mb-5">
-                  <div className="w-[120px] h-[120px] rounded-full bg-white/15 flex items-center justify-center">
+              <div className="w-full h-full flex flex-col items-center justify-center">
+                {/* Pulsing Avatar */}
+                <div className="relative mb-8">
+                  <div className="absolute inset-0 bg-white rounded-full animate-ping opacity-25"></div>
+                  <div className="w-[140px] h-[140px] rounded-full border-4 border-white flex items-center justify-center bg-white/20 backdrop-blur-md z-10 relative shadow-xl">
                     <span className="text-6xl">👤</span>
                   </div>
                 </div>
-                <h2 className="text-white text-2xl font-bold mb-2">
+                <h2 className="text-white text-3xl font-bold mb-2 drop-shadow-md">
                   {callState.consultantName || 'Consultant'}
                 </h2>
-                <p className="text-white/70 text-base">Ringing...</p>
+                <p className="text-white/90 text-lg font-medium animate-pulse">Ringing...</p>
               </div>
             )}
           </div>
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center">
-            <div className="w-[140px] h-[140px] rounded-full border-[3px] border-pink-500/50 flex items-center justify-center mb-5">
-              <div className="w-[120px] h-[120px] rounded-full bg-white/15 flex items-center justify-center">
-                <span className="text-6xl">👤</span>
+          // AUDIO CALL UI
+          <div className="w-full h-full flex flex-col items-center justify-center relative overflow-hidden">
+            {/* Decorative circles */}
+            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl"></div>
+
+            <div className="relative mb-10">
+               {/* Pulsing rings for active call */}
+               {isConnected && (
+                 <>
+                  <div className="absolute inset-0 -m-4 border border-white/20 rounded-full animate-[ping_3s_linear_infinite]"></div>
+                  <div className="absolute inset-0 -m-8 border border-white/10 rounded-full animate-[ping_4s_linear_infinite_1s]"></div>
+                 </>
+               )}
+              
+              <div className="w-[160px] h-[160px] rounded-full border-4 border-white/50 flex items-center justify-center bg-white/20 backdrop-blur-lg shadow-2xl relative z-10">
+                <span className="text-7xl">👤</span>
               </div>
             </div>
-            <h2 className="text-white text-2xl font-bold mb-2">
+
+            <h2 className="text-white text-3xl font-bold mb-3 drop-shadow-lg tracking-wide">
               {callState.consultantName || 'Consultant'}
             </h2>
-            <p className="text-white/70 text-base">
-              {isConnected ? 'Connected' : 'Ringing...'}
-            </p>
-            {isConnected && (
-              <p className="text-pink-500 text-lg font-semibold mt-2">
-                {formatDuration(duration)}
-              </p>
+            
+            {!isConnected && (
+                <p className="text-white/80 font-medium tracking-wider animate-pulse mt-2">Connecting...</p>
             )}
           </div>
         )}
@@ -585,7 +547,7 @@ export default function ActiveCallModal() {
         {callState.callType === 'video' && isVideoEnabled && (
           <div 
             id="local-video" 
-            className="absolute top-24 right-5 w-[120px] h-[160px] rounded-xl overflow-hidden border-2 border-white/30 z-10 shadow-lg bg-black"
+            className="absolute top-24 right-5 w-[120px] h-[160px] rounded-2xl overflow-hidden border-2 border-white/40 z-10 shadow-2xl bg-black/50 backdrop-blur-sm"
           />
         )}
 
@@ -598,15 +560,15 @@ export default function ActiveCallModal() {
             }`}
           >
             {type === 'emoji' ? (
-              <span className="text-5xl">{content}</span>
+              <span className="text-6xl drop-shadow-lg">{content}</span>
             ) : (
-              <div className="max-w-[250px] bg-white/95 rounded-2xl px-4 py-3 shadow-lg">
+              <div className="max-w-[250px] bg-white/90 backdrop-blur-xl rounded-2xl px-5 py-4 shadow-xl border border-white/40">
                 {!isOwn && senderName && (
-                  <span className="block text-xs font-semibold text-pink-500 mb-1">
+                  <span className="block text-xs font-bold text-indigo-600 mb-1">
                     {senderName}
                   </span>
                 )}
-                <span className="text-sm text-gray-900 leading-snug">
+                <span className="text-base text-gray-900 font-medium leading-snug">
                   {content}
                 </span>
               </div>
@@ -614,31 +576,35 @@ export default function ActiveCallModal() {
           </div>
         ))}
 
-        {/* TOP STATUS BAR */}
-        <div className="absolute top-0 left-0 right-0 p-5 bg-black/40 flex flex-col items-center z-[5]">
-          <div className="flex items-center gap-2 mb-1">
-            <span 
-              className={`w-2 h-2 rounded-full ${
-                isConnected ? 'bg-green-500' : 'bg-yellow-500'
-              }`} 
-            />
-            <span className="text-white text-base font-semibold">
-              {isConnected ? 'Connected' : 'Ringing...'}
-            </span>
+        {/* TOP STATUS BAR - UPDATED: IN CALL + TIMER */}
+        <div className="absolute top-6 left-0 right-0 z-[20] flex justify-center pointer-events-none">
+          <div className="bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 flex items-center gap-3 shadow-lg">
+             {/* Recording Dot */}
+             <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.6)]" />
+             
+             {/* Text */}
+             <span className="text-white/90 text-sm font-semibold tracking-wide">
+               {isConnected ? 'In Call' : 'Connecting'}
+             </span>
+             
+             {/* Separator */}
+             <div className="w-[1px] h-4 bg-white/20" />
+             
+             {/* Timer */}
+             <span className="text-white font-mono text-sm tracking-widest min-w-[45px]">
+               {isConnected ? formatDuration(duration) : '--:--'}
+             </span>
           </div>
-          {isConnected && (
-            <p className="text-white/70 text-sm">{formatDuration(duration)}</p>
-          )}
         </div>
 
-        {/* CHAT PANEL */}
+        {/* CHAT PANEL - FIXED SIDE BY SIDE */}
         {showChat && (
-          <div className="absolute bottom-[200px] left-5 right-5 max-w-[400px] max-h-[350px] bg-[rgba(20,20,30,0.95)] rounded-2xl overflow-hidden z-20 flex flex-col backdrop-blur-lg border border-white/10">
-            <div className="flex justify-between items-center px-4 py-3 border-b border-white/10">
-              <span className="text-white text-base font-semibold">Chat</span>
+          <div className="absolute bottom-[220px] left-5 right-5 max-w-[400px] max-h-[400px] bg-white/10 rounded-3xl overflow-hidden z-20 flex flex-col backdrop-blur-xl border border-white/20 shadow-2xl">
+            <div className="flex justify-between items-center px-5 py-4 border-b border-white/10 bg-white/5">
+              <span className="text-white text-lg font-bold tracking-wide">Messages</span>
               <button 
                 onClick={() => setShowChat(false)}
-                className="text-white text-lg px-2 py-1 hover:bg-white/10 rounded transition-colors"
+                className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-8 h-8 flex items-center justify-center transition-all"
               >
                 ✕
               </button>
@@ -646,11 +612,11 @@ export default function ActiveCallModal() {
 
             <div 
               ref={chatContainerRef}
-              className="flex-1 overflow-y-auto p-4 max-h-[200px] space-y-2"
+              className="flex-1 overflow-y-auto p-4 max-h-[250px] flex flex-col gap-3"
             >
               {chatMessages.length === 0 ? (
-                <div className="text-white/40 text-center py-8">
-                  No messages yet
+                <div className="text-white/50 text-center py-10 italic">
+                  Start the conversation...
                 </div>
               ) : (
                 chatMessages.map((msg) => {
@@ -658,29 +624,37 @@ export default function ActiveCallModal() {
                   return (
                     <div
                       key={msg._id}
-                      className={`max-w-[75%] px-4 py-2.5 rounded-2xl flex flex-col ${
-                        isOwn 
-                          ? 'ml-auto bg-pink-500 rounded-br-sm' 
-                          : 'mr-auto bg-white/15 rounded-bl-sm'
-                      }`}
+                      className={`flex flex-col max-w-[85%] ${isOwn ? 'items-end self-end' : 'items-start self-start'}`}
                     >
-                      <span className="text-white text-sm break-words">
-                        {msg.content}
+                      {/* Name Label */}
+                      <span className="text-xs text-white/70 mb-1 px-1 font-medium">
+                          {isOwn ? 'You' : (callState.consultantName || 'Consultant')}
                       </span>
-                      <span className="text-white/60 text-[10px] mt-1 self-end">
-                        {new Date(msg.createdAt).toLocaleTimeString('en-US', {
-                          hour: 'numeric',
-                          minute: '2-digit',
-                          hour12: true,
-                        })}
-                      </span>
+
+                      <div
+                        className={`px-4 py-2.5 rounded-2xl shadow-sm ${
+                          isOwn 
+                            ? 'bg-purple-600 text-white rounded-br-none' // Your message
+                            : 'bg-white/20 backdrop-blur-md rounded-bl-none text-white border border-white/10' // Their message
+                        }`}
+                      >
+                        <span className="text-[15px] leading-relaxed break-words font-medium">
+                          {msg.content}
+                        </span>
+                        <div className={`text-[10px] mt-1 font-medium text-right ${isOwn ? 'text-white/70' : 'text-white/50'}`}>
+                          {new Date(msg.createdAt).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          })}
+                        </div>
+                      </div>
                     </div>
                   );
                 })
               )}
             </div>
 
-            <div className="flex items-center gap-3 p-3 border-t border-white/10">
+            <div className="flex items-center gap-3 p-4 border-t border-white/10 bg-black/20">
               <input
                 type="text"
                 value={chatInput}
@@ -688,94 +662,74 @@ export default function ActiveCallModal() {
                 onKeyPress={handleKeyPress}
                 placeholder="Type a message..."
                 maxLength={500}
-                className="flex-1 bg-white/10 border-none rounded-full px-4 py-2.5 text-white text-sm outline-none placeholder:text-white/40 focus:bg-white/15 transition-colors"
+                className="flex-1 bg-white/10 border border-white/10 rounded-full px-5 py-3 text-white text-sm outline-none placeholder:text-white/40 focus:bg-white/20 focus:border-white/30 transition-all shadow-inner"
               />
               <button
                 onClick={handleSendMessage}
                 disabled={!chatInput.trim() || isSendingMessage}
-                className={`w-10 h-10 rounded-full bg-pink-500 flex items-center justify-center transition-opacity ${
+                className={`w-11 h-11 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 flex items-center justify-center transition-all shadow-lg ${
                   !chatInput.trim() || isSendingMessage 
-                    ? 'opacity-50 cursor-not-allowed' 
-                    : 'opacity-100 hover:bg-pink-600 cursor-pointer'
+                    ? 'opacity-50 grayscale cursor-not-allowed' 
+                    : 'opacity-100 hover:scale-105 active:scale-95'
                 }`}
               >
-                <span className="text-white text-base">➤</span>
+                <span className="text-white text-lg ml-0.5">➤</span>
               </button>
             </div>
           </div>
         )}
 
-        {/* BOTTOM CONTROLS */}
-        <div className="absolute bottom-0 left-0 right-0 px-5 pt-5 pb-10 bg-black/60 z-[5]">
-          <div className="flex justify-center gap-3 mb-5">
+        {/* BOTTOM CONTROLS - FLOATING DOCK STYLE */}
+        <div className="absolute bottom-8 left-0 right-0 z-[20] flex flex-col items-center gap-5">
+          
+          {/* 1. Chat & Emojis Row (Floating above dock) */}
+          <div className="flex justify-center items-center gap-3 px-4">
             <button
               onClick={() => setShowChat(!showChat)}
-              className={`w-11 h-11 rounded-full flex items-center justify-center text-xl transition-colors ${
+              className={`w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all border shadow-lg backdrop-blur-md ${
                 showChat 
-                  ? 'bg-pink-500' 
-                  : 'bg-white/15 hover:bg-white/25'
+                  ? 'bg-white text-purple-600 border-white' 
+                  : 'bg-black/30 text-white border-white/10 hover:bg-black/50'
               }`}
-              title="Chat"
             >
               💬
             </button>
             
-            {CALL_EMOJIS.slice(0, 5).map((emoji, index) => (
+            {CALL_EMOJIS.slice(0, 4).map((emoji, index) => (
               <button
                 key={index}
                 onClick={() => handleSendEmoji(emoji)}
-                className="w-11 h-11 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-xl transition-colors"
-                title={`Send ${emoji}`}
+                className="w-10 h-10 rounded-full bg-black/30 hover:bg-black/50 border border-white/10 flex items-center justify-center text-xl transition-all hover:scale-110 active:scale-95 shadow-lg backdrop-blur-md cursor-pointer"
               >
                 {emoji}
               </button>
             ))}
           </div>
 
-          <div className="flex justify-center items-center gap-4">
+          {/* 2. Main Action Pill (The Dock) */}
+          <div className="flex items-center gap-6 px-8 py-3 bg-black/40 backdrop-blur-2xl rounded-full border border-white/10 shadow-2xl">
+            
+            {/* WHATSAPP STYLE MUTE BUTTON */}
             <button
               onClick={toggleMute}
               disabled={!isConnected}
-              className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all ${
+              className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-md ${
                 isMuted 
-                  ? 'bg-red-500' 
-                  : 'bg-white/20 hover:bg-white/30'
-              } ${!isConnected ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-              title={isMuted ? 'Unmute' : 'Mute'}
+                  ? 'bg-white text-gray-900' // Muted: White bg, dark icon
+                  : 'bg-white/10 text-white hover:bg-white/20' // Unmuted: Glass bg, white icon
+              } ${!isConnected ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-105 active:scale-95'}`}
             >
-              {isMuted ? '🔇' : '🎤'}
+              {isMuted ? <MicOffIcon /> : <MicIcon />}
             </button>
 
-            {callState.callType === 'video' && (
-              <button
-                onClick={toggleVideo}
-                disabled={!isConnected}
-                className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all ${
-                  !isVideoEnabled 
-                    ? 'bg-red-500' 
-                    : 'bg-white/20 hover:bg-white/30'
-                } ${!isConnected ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                title={isVideoEnabled ? 'Turn off video' : 'Turn on video'}
-              >
-                {isVideoEnabled ? '📹' : '📷'}
-              </button>
-            )}
-
+            {/* END CALL BUTTON */}
             <button
               onClick={handleEndCall}
-              className="w-[68px] h-[68px] rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-3xl shadow-lg shadow-red-500/40 transition-colors cursor-pointer"
-              title="End call"
+              className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-3xl shadow-lg transition-all cursor-pointer hover:scale-105 active:scale-95"
             >
-              <span className="rotate-[135deg] inline-block">📞</span>
+              <span className="rotate-[135deg] text-white">📞</span>
             </button>
 
-            {/* Speaker Button (Visual only on web) */}
-            <button
-              className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-2xl cursor-default"
-              title="Speaker"
-            >
-              🔊
-            </button>
           </div>
         </div>
       </div>
@@ -786,26 +740,25 @@ export default function ActiveCallModal() {
       
       <style jsx global>{`
         @keyframes float-up {
-          0% {
-            opacity: 0;
-            transform: translateY(0) scale(0.8);
-          }
-          10% {
-            opacity: 1;
-            transform: translateY(-20px) scale(1.1);
-          }
-          85% {
-            opacity: 1;
-            transform: translateY(-180px) scale(1);
-          }
-          100% {
-            opacity: 0;
-            transform: translateY(-200px) scale(0.9);
-          }
+          0% { opacity: 0; transform: translateY(0) scale(0.5); }
+          10% { opacity: 1; transform: translateY(-20px) scale(1.1); }
+          85% { opacity: 1; transform: translateY(-180px) scale(1); }
+          100% { opacity: 0; transform: translateY(-200px) scale(0.9); }
         }
         
         .animate-float-up {
           animation: float-up 3s ease-out forwards;
+        }
+
+        @keyframes gradient-xy {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .animate-gradient-xy {
+            background-size: 200% 200%;
+            animation: gradient-xy 15s ease infinite;
         }
         
         #remote-video video {

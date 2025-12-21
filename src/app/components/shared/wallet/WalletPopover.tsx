@@ -1,15 +1,16 @@
-"use client";
+'use client';
 
 import { motion } from "framer-motion";
-import { IoClose, IoCashOutline } from "react-icons/io5";
+import { IoClose } from "react-icons/io5";
 import { Coins } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-
+import { useRouter } from "next/navigation";
 
 type WalletPopoverProps = {
   onClose?: () => void;
 };
 
+// Defined packs
 const coinPacks = [
   { id: 1, coins: 150, originalPrice: 230, price: 200, discountLabel: "10% OFF", highlight: true },
   { id: 2, coins: 330, originalPrice: 500, price: 270, discountLabel: "50% OFF", highlight: true },
@@ -21,12 +22,25 @@ const coinPacks = [
   { id: 8, coins: 14100, originalPrice: 29709, price: 19291 },
 ];
 
-
 export default function WalletPopover({ onClose }: WalletPopoverProps) {
   const { user } = useAuth();
+  const router = useRouter();
 
-const walletCoins =
-  (user?.wallet?.main ?? 0) + (user?.wallet?.bonus ?? 0);
+  const walletCoins = (user?.wallet?.main ?? 0) + (user?.wallet?.bonus ?? 0);
+
+// inside WalletPopover function
+
+  const handlePackClick = (amount: number) => {
+    // 1. Close the popover
+    if (onClose) onClose();
+    
+    // 2. Save amount to Session Storage (Invisible to user)
+    sessionStorage.setItem('rechargeAmount', amount.toString());
+    
+    // 3. Navigate to the clean URL (No ?amount= visible)
+    router.push('/recharge'); 
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -34,33 +48,21 @@ const walletCoins =
       exit={{ opacity: 0, y: 10, scale: 0.98 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
       className="
-        w-full
-        max-w-md
-        lg:max-w-xl
-        xl:max-w-2xl
-        rounded-3xl
-        border border-white/10
-        bg-[#0f0f11]/90
-        backdrop-blur-2xl
+        w-full max-w-md lg:max-w-xl xl:max-w-2xl
+        rounded-3xl border border-white/10
+        bg-[#0f0f11]/90 backdrop-blur-2xl
         shadow-[0_30px_80px_-25px_rgba(217,70,239,0.45)]
-        overflow-hidden
-        mt-2
+        overflow-hidden mt-2
       "
     >
-
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
         <div>
           <h3 className="text-lg font-semibold text-white">Coin Store</h3>
           <p className="text-sm text-white/60">
-            My Coins:{" "}
-            <span className="text-[#f0abfc] font-medium">
-              {walletCoins}
-            </span>
+            My Coins: <span className="text-[#f0abfc] font-medium">{walletCoins}</span>
           </p>
-
         </div>
-
         <button
           onClick={onClose}
           className="p-2 rounded-full hover:bg-white/10 transition"
@@ -74,6 +76,7 @@ const walletCoins =
         {coinPacks.map((pack) => (
           <motion.button
             key={pack.id}
+            onClick={() => handlePackClick(pack.price)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className={`
@@ -97,7 +100,7 @@ const walletCoins =
               <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center">
                 <Coins size={18} color="#EAB308" strokeWidth={2.2} />
               </div>
-              <div>
+              <div className="text-left">
                 <p className="text-white font-semibold text-lg">{pack.coins}</p>
                 <p className="text-white/60 text-xs">Coins</p>
               </div>
@@ -105,9 +108,7 @@ const walletCoins =
 
             <div className="text-right">
               {pack.originalPrice !== pack.price && (
-                <p className="text-xs text-white/40 line-through">
-                  ₹{pack.originalPrice}
-                </p>
+                <p className="text-xs text-white/40 line-through">₹{pack.originalPrice}</p>
               )}
               <p className={`font-semibold ${pack.highlight ? "text-[#fde047]" : "text-white"}`}>
                 ₹{pack.price}
@@ -118,8 +119,8 @@ const walletCoins =
       </div>
 
       <div className="px-6 py-4 border-t border-white/10 text-center">
-        <button className="text-sm text-white/70 hover:text-white">
-          Payment History →
+        <button onClick={() => router.push('/recharge')} className="text-sm text-white/70 hover:text-white underline decoration-white/30 underline-offset-4">
+          Custom Recharge / Payment History
         </button>
       </div>
     </motion.div>
