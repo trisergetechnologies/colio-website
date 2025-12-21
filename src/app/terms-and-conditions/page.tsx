@@ -1,6 +1,6 @@
 export default function TermsAndConditionsPage() {
   return (
-    <section
+    <div
       className="relative min-h-screen overflow-hidden"
       style={{
         background:
@@ -30,7 +30,7 @@ export default function TermsAndConditionsPage() {
         <div className="relative rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-xl shadow-[0_0_80px_rgba(217,70,239,0.12)]">
           <div className="px-8 sm:px-12 py-12 sm:py-14 space-y-12 text-white/80 leading-relaxed text-lg">
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 1. Introduction
               </h2>
@@ -41,9 +41,9 @@ export default function TermsAndConditionsPage() {
                 or “us”). By accessing or using Colio, you agree to be bound by
                 these Terms.
               </p>
-            </section>
+            </div>
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 2. Eligibility
               </h2>
@@ -52,9 +52,9 @@ export default function TermsAndConditionsPage() {
                 By using the service, you confirm that you meet this
                 requirement.
               </p>
-            </section>
+            </div>
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 3. User Conduct
               </h2>
@@ -66,9 +66,9 @@ export default function TermsAndConditionsPage() {
                   activities.
                 </li>
               </ul>
-            </section>
+            </div>
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 4. Vulgarity, Nudity & Explicit Content (STRICT POLICY)
               </h2>
@@ -96,9 +96,9 @@ export default function TermsAndConditionsPage() {
                   authorities if required by law.
                 </li>
               </ul>
-            </section>
+            </div>
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 5. Account Suspension & Termination
               </h2>
@@ -108,9 +108,9 @@ export default function TermsAndConditionsPage() {
                 or engage in behavior that compromises user safety or platform
                 integrity.
               </p>
-            </section>
+            </div>
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 6. Intellectual Property
               </h2>
@@ -119,9 +119,9 @@ export default function TermsAndConditionsPage() {
                 intellectual property of Colio Tech Private Limited and may
                 not be copied, modified, or distributed without permission.
               </p>
-            </section>
+            </div>
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 7. Limitation of Liability
               </h2>
@@ -129,9 +129,9 @@ export default function TermsAndConditionsPage() {
                 Colio shall not be liable for any indirect, incidental, or
                 consequential damages arising from your use of the platform.
               </p>
-            </section>
+            </div>
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 8. Changes to Terms
               </h2>
@@ -139,9 +139,9 @@ export default function TermsAndConditionsPage() {
                 We may update these Terms from time to time. Continued use of
                 Colio after changes indicates acceptance of the revised Terms.
               </p>
-            </section>
+            </div>
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 9. Contact Information
               </h2>
@@ -152,11 +152,11 @@ export default function TermsAndConditionsPage() {
               <p className="mt-2 font-medium">
                 📧 thisiscolio@gmail.com
               </p>
-            </section>
+            </div>
 
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
