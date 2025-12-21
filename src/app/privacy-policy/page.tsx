@@ -1,6 +1,6 @@
 export default function PrivacyPolicyPage() {
   return (
-    <section
+    <div
       className="relative min-h-screen overflow-hidden"
       style={{
         background:
@@ -30,7 +30,7 @@ export default function PrivacyPolicyPage() {
         <div className="relative rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-xl shadow-[0_0_80px_rgba(217,70,239,0.12)]">
           <div className="px-8 sm:px-12 py-12 sm:py-14 space-y-12 text-white/80 leading-relaxed text-lg">
             
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 1. Introduction
               </h2>
@@ -40,9 +40,9 @@ export default function PrivacyPolicyPage() {
                 collect, use, store, and protect your personal information when
                 you use our website, mobile application, and related services.
               </p>
-            </section>
+            </div>
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 2. Information We Collect
               </h2>
@@ -61,9 +61,9 @@ export default function PrivacyPolicyPage() {
                   moderation, and service quality.
                 </li>
               </ul>
-            </section>
+            </div>
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 3. How We Use Your Information
               </h2>
@@ -73,9 +73,9 @@ export default function PrivacyPolicyPage() {
                 <li>To ensure platform safety and prevent misuse or fraud</li>
                 <li>To communicate service updates and support responses</li>
               </ul>
-            </section>
+            </div>
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 4. Data Sharing & Disclosure
               </h2>
@@ -85,9 +85,9 @@ export default function PrivacyPolicyPage() {
                 authorities only when required for compliance, security, or
                 service delivery.
               </p>
-            </section>
+            </div>
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 5. Data Security
               </h2>
@@ -96,9 +96,9 @@ export default function PrivacyPolicyPage() {
                 to protect your personal data. However, no system can guarantee
                 complete security.
               </p>
-            </section>
+            </div>
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 6. Data Retention
               </h2>
@@ -107,9 +107,9 @@ export default function PrivacyPolicyPage() {
                 fulfill the purposes outlined in this policy or to comply with
                 legal obligations.
               </p>
-            </section>
+            </div>
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 7. Your Rights
               </h2>
@@ -118,9 +118,9 @@ export default function PrivacyPolicyPage() {
                 <li>Withdraw consent where applicable</li>
                 <li>Request clarification on how your data is used</li>
               </ul>
-            </section>
+            </div>
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 8. Changes to This Policy
               </h2>
@@ -128,9 +128,9 @@ export default function PrivacyPolicyPage() {
                 We may update this Privacy Policy from time to time. Any changes
                 will be reflected on this page with an updated revision date.
               </p>
-            </section>
+            </div>
 
-            <section>
+            <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 9. Contact Information
               </h2>
@@ -141,11 +141,11 @@ export default function PrivacyPolicyPage() {
               <p className="mt-2 font-medium">
                 📧 thisiscolio@gmail.com
               </p>
-            </section>
+            </div>
 
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
