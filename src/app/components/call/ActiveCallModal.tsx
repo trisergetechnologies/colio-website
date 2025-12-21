@@ -1,4 +1,3 @@
-// components/call/ActiveCallModal.tsx
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
@@ -35,7 +34,6 @@ interface FloatingNotification {
 export default function ActiveCallModal() {
   const { callState, setCallStage, endCall, setError } = useCall();
 
-  // Get current user ID from localStorage
   const getCurrentUserId = (): string => {
     if (typeof window === 'undefined') return '';
     try {
@@ -60,14 +58,13 @@ export default function ActiveCallModal() {
   const [duration, setDuration] = useState(0);
   const [remoteUid, setRemoteUid] = useState<number>(0);
 
-  // Chat states
   const [showChat, setShowChat] = useState(false);
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [isSendingMessage, setIsSendingMessage] = useState(false);
 
-  // Floating notifications
-  const [floatingNotifications, setFloatingNotifications] = useState<FloatingNotification[]>([]);
+  const [floatingNotifications, setFloatingNotifications] =
+    useState<FloatingNotification[]>([]);
 
   // ============================================
   // REFS
@@ -86,16 +83,98 @@ export default function ActiveCallModal() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const currentUserIdRef = useRef<string>('');
 
+  // 🔔 RINGTONE REFS
+  const ringtoneRef = useRef<HTMLAudioElement | null>(null);
+  const isRingtonePlayingRef = useRef(false);
+
   // ============================================
   // EFFECTS
   // ============================================
 
-  // Get user ID on mount
   useEffect(() => {
     currentUserIdRef.current = getCurrentUserId();
   }, []);
 
-  // Initialize call
+  // 🔔 IMPROVED RINGTONE SETUP
+  useEffect(() => {
+    // Create audio element
+    const audio = new Audio('/ringing.mp3');
+    audio.loop = true;
+    audio.volume = 0.6;
+    
+    // Preload the audio
+    audio.preload = 'auto';
+    
+    // Add error handler
+  
+
+    // Add canplay handler for debugging
+    audio.addEventListener('canplay', () => {
+      console.log('[ActiveCall] 🔔 Ringtone ready to play');
+    });
+
+    ringtoneRef.current = audio;
+
+    return () => {
+      if (ringtoneRef.current) {
+        ringtoneRef.current.pause();
+        ringtoneRef.current.src = '';
+        ringtoneRef.current = null;
+      }
+    };
+  }, []);
+
+  // 🔔 PLAY RINGTONE WHEN RINGING
+  useEffect(() => {
+    const playRingtone = async () => {
+      if (callState.stage === 'ringing' && ringtoneRef.current && !isRingtonePlayingRef.current) {
+        try {
+          console.log('[ActiveCall] 🔔 Attempting to play ringtone...');
+          
+          // Try to play
+          await ringtoneRef.current.play();
+          isRingtonePlayingRef.current = true;
+          console.log('[ActiveCall] 🔔 Ringtone playing successfully');
+        } catch (error: any) {
+          console.error('[ActiveCall] 🔔 Ringtone play failed:', error);
+          
+          // If autoplay is blocked, try again on next user interaction
+          if (error.name === 'NotAllowedError') {
+            console.warn('[ActiveCall] 🔔 Autoplay blocked - will retry on user interaction');
+            
+            // Add one-time click listener to start audio
+            const handleInteraction = async () => {
+              try {
+                if (ringtoneRef.current && callState.stage === 'ringing') {
+                  await ringtoneRef.current.play();
+                  isRingtonePlayingRef.current = true;
+                  console.log('[ActiveCall] 🔔 Ringtone started after user interaction');
+                }
+              } catch (e) {
+                console.error('[ActiveCall] 🔔 Still failed:', e);
+              }
+              document.removeEventListener('click', handleInteraction);
+            };
+            
+            document.addEventListener('click', handleInteraction, { once: true });
+          }
+        }
+      }
+    };
+
+    playRingtone();
+  }, [callState.stage]);
+
+  // 🔔 STOP RINGTONE WHEN CONNECTED
+  useEffect(() => {
+    if (isConnected && ringtoneRef.current && isRingtonePlayingRef.current) {
+      console.log('[ActiveCall] 🔔 Stopping ringtone (connected)');
+      ringtoneRef.current.pause();
+      ringtoneRef.current.currentTime = 0;
+      isRingtonePlayingRef.current = false;
+    }
+  }, [isConnected]);
+
   useEffect(() => {
     if (callState.stage === 'ringing' && !isInitializedRef.current) {
       isInitializedRef.current = true;
@@ -103,31 +182,27 @@ export default function ActiveCallModal() {
     }
 
     return () => {
-      if (callState.stage === 'ended') {
-        cleanup();
-      }
+      if (callState.stage === 'ended') cleanup();
     };
   }, [callState.stage]);
 
-  // Start polling when connected
   useEffect(() => {
     if (isConnected && callState.sessionId) {
-      console.log('[ActiveCall] ✅ Connected - Starting polling');
       startEmojiPolling();
       startChatPolling();
       fetchChatMessages();
     }
 
     return () => {
-      if (emojiPollRef.current) clearInterval(emojiPollRef.current);
-      if (chatPollRef.current) clearInterval(chatPollRef.current);
+      emojiPollRef.current && clearInterval(emojiPollRef.current);
+      chatPollRef.current && clearInterval(chatPollRef.current);
     };
   }, [isConnected, callState.sessionId]);
 
-  // Auto-scroll chat to bottom
   useEffect(() => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
     }
   }, [chatMessages]);
 
@@ -137,65 +212,44 @@ export default function ActiveCallModal() {
 
   const initializeAgora = async () => {
     try {
-      console.log('[ActiveCall] ========================================');
-      console.log('[ActiveCall] Initializing Agora...');
-      console.log('[ActiveCall] Channel:', callState.channelName);
-      console.log('[ActiveCall] Session ID:', callState.sessionId);
-      console.log('[ActiveCall] ========================================');
-
       const { default: AgoraClient } = await import('@/lib/agora/agoraClient');
       const client = new AgoraClient();
       agoraClientRef.current = client;
 
-      // Event: Consultant joined
       client.onUserJoined((user: any) => {
-        console.log('[ActiveCall] 🎉 Consultant joined! UID:', user.uid);
+        // 🔔 STOP RINGTONE
+        console.log('[ActiveCall] 🔔 User joined - stopping ringtone');
+        if (ringtoneRef.current && isRingtonePlayingRef.current) {
+          ringtoneRef.current.pause();
+          ringtoneRef.current.currentTime = 0;
+          isRingtonePlayingRef.current = false;
+        }
 
         setRemoteUid(user.uid);
         setIsConnected(true);
         setCallStage('connected');
 
-        // Play remote video
         if (callState.callType === 'video' && user.videoTrack) {
           setTimeout(() => {
-            console.log('[ActiveCall] Playing remote video...');
             client.playRemoteVideo(user, 'remote-video');
           }, 200);
         }
 
-        // Play remote audio
         if (user.audioTrack) {
-          console.log('[ActiveCall] Playing remote audio...');
           client.playRemoteAudio(user);
         }
 
-        // Start call timer
         if (!timerRef.current) {
-          console.log('[ActiveCall] ⏱️ Starting call timer');
           timerRef.current = setInterval(() => {
-            setDuration(prev => prev + 1);
+            setDuration((d) => d + 1);
           }, 1000);
         }
       });
 
-      // Event: Consultant left
-      client.onUserLeft((user: any) => {
-        console.log('[ActiveCall] 👋 Consultant left');
-        setRemoteUid(0);
-        setIsConnected(false);
-
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
-
-        setTimeout(() => {
-          alert('Call ended - Consultant left the call');
-          handleEndCall();
-        }, 500);
+      client.onUserLeft(() => {
+        handleEndCall();
       });
 
-      // Join channel
       const success = await client.init(
         {
           appId: AGORA_APP_ID,
@@ -205,22 +259,22 @@ export default function ActiveCallModal() {
         callState.callType!
       );
 
-      if (!success) {
-        throw new Error('Failed to join Agora channel');
-      }
+      if (!success) throw new Error('Failed to join Agora');
 
-      console.log('[ActiveCall] ✅ Successfully joined channel');
-
-      // Play local video preview
       if (callState.callType === 'video') {
         setTimeout(() => {
-          console.log('[ActiveCall] Playing local video preview...');
           client.playLocalVideo('local-video');
         }, 500);
       }
-
     } catch (error: any) {
-      console.error('[ActiveCall] ❌ Initialization failed:', error);
+      // 🔔 STOP RINGTONE ON ERROR
+      console.log('[ActiveCall] 🔔 Error - stopping ringtone');
+      if (ringtoneRef.current && isRingtonePlayingRef.current) {
+        ringtoneRef.current.pause();
+        ringtoneRef.current.currentTime = 0;
+        isRingtonePlayingRef.current = false;
+      }
+
       setError(error.message || 'Failed to connect to call');
     }
   };
@@ -230,42 +284,29 @@ export default function ActiveCallModal() {
   // ============================================
 
   const cleanup = async () => {
-    if (isCleaningUpRef.current) {
-      console.log('[ActiveCall] ⚠️ Already cleaning up, skipping');
-      return;
+    if (isCleaningUpRef.current) return;
+    isCleaningUpRef.current = true;
+
+    // 🔔 STOP RINGTONE
+    console.log('[ActiveCall] 🔔 Cleanup - stopping ringtone');
+    if (ringtoneRef.current) {
+      ringtoneRef.current.pause();
+      ringtoneRef.current.currentTime = 0;
+      isRingtonePlayingRef.current = false;
     }
 
-    isCleaningUpRef.current = true;
-    console.log('[ActiveCall] 🧹 Cleaning up...');
-
-    // Stop timer
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
 
-    // Stop polling
-    if (emojiPollRef.current) {
-      clearInterval(emojiPollRef.current);
-      emojiPollRef.current = null;
-    }
+    emojiPollRef.current && clearInterval(emojiPollRef.current);
+    chatPollRef.current && clearInterval(chatPollRef.current);
 
-    if (chatPollRef.current) {
-      clearInterval(chatPollRef.current);
-      chatPollRef.current = null;
-    }
-
-    // Leave Agora
     if (agoraClientRef.current) {
-      try {
-        await agoraClientRef.current.leave();
-        agoraClientRef.current = null;
-      } catch (error) {
-        console.error('[ActiveCall] Cleanup error:', error);
-      }
+      await agoraClientRef.current.leave();
+      agoraClientRef.current = null;
     }
-
-    console.log('[ActiveCall] ✅ Cleanup complete');
 
     setTimeout(() => {
       isCleaningUpRef.current = false;
@@ -276,27 +317,27 @@ export default function ActiveCallModal() {
   // FLOATING NOTIFICATIONS
   // ============================================
 
-  const showFloatingNotification = useCallback((
-    type: 'emoji' | 'message',
-    content: string,
-    isOwn: boolean,
-    senderName?: string
-  ) => {
-    const id = notificationIdRef.current++;
+  const showFloatingNotification = useCallback(
+    (
+      type: 'emoji' | 'message',
+      content: string,
+      isOwn: boolean,
+      senderName?: string
+    ) => {
+      const id = notificationIdRef.current++;
+      setFloatingNotifications((prev) => [
+        ...prev,
+        { id, type, content, isOwn, senderName },
+      ]);
 
-    setFloatingNotifications(prev => [...prev, {
-      id,
-      type,
-      content,
-      isOwn,
-      senderName
-    }]);
-
-    // Auto-remove after animation
-    setTimeout(() => {
-      setFloatingNotifications(prev => prev.filter(n => n.id !== id));
-    }, type === 'message' ? 3500 : 2500);
-  }, []);
+      setTimeout(() => {
+        setFloatingNotifications((prev) =>
+          prev.filter((n) => n.id !== id)
+        );
+      }, type === 'message' ? 3500 : 2500);
+    },
+    []
+  );
 
   // ============================================
   // EMOJI FUNCTIONS
@@ -328,7 +369,6 @@ export default function ActiveCallModal() {
   };
 
   const handleSendEmoji = async (emoji: string) => {
-    // Show own emoji immediately
     showFloatingNotification('emoji', emoji, true);
 
     if (callState.sessionId) {
@@ -378,7 +418,6 @@ export default function ActiveCallModal() {
               processedMessageIds.current.add(msg._id);
               setChatMessages(prev => [...prev, msg]);
 
-              // Show floating notification for incoming messages
               const isOwn = isOwnMessage(msg);
               if (!isOwn) {
                 showFloatingNotification(
@@ -416,7 +455,7 @@ export default function ActiveCallModal() {
       }
     } catch (error) {
       console.error('[ActiveCall] Send message error:', error);
-      setChatInput(content); // Restore input on error
+      setChatInput(content);
     } finally {
       setIsSendingMessage(false);
     }
@@ -504,10 +543,7 @@ export default function ActiveCallModal() {
     <div className="fixed inset-0 bg-black z-[10000]">
       <div className="relative w-full h-full bg-gradient-to-b from-[#1a1a2e] via-[#16213e] to-[#0f3460]">
         
-        {/* ============================================ */}
         {/* REMOTE VIDEO / VOICE BACKGROUND */}
-        {/* ============================================ */}
-        
         {callState.callType === 'video' ? (
           <div id="remote-video" className="w-full h-full bg-black">
             {!isConnected && (
@@ -545,10 +581,7 @@ export default function ActiveCallModal() {
           </div>
         )}
 
-        {/* ============================================ */}
         {/* LOCAL VIDEO PREVIEW (PiP) */}
-        {/* ============================================ */}
-        
         {callState.callType === 'video' && isVideoEnabled && (
           <div 
             id="local-video" 
@@ -556,10 +589,7 @@ export default function ActiveCallModal() {
           />
         )}
 
-        {/* ============================================ */}
-        {/* FLOATING NOTIFICATIONS (Emojis + Messages) */}
-        {/* ============================================ */}
-        
+        {/* FLOATING NOTIFICATIONS */}
         {floatingNotifications.map(({ id, type, content, isOwn, senderName }) => (
           <div
             key={id}
@@ -584,10 +614,7 @@ export default function ActiveCallModal() {
           </div>
         ))}
 
-        {/* ============================================ */}
         {/* TOP STATUS BAR */}
-        {/* ============================================ */}
-        
         <div className="absolute top-0 left-0 right-0 p-5 bg-black/40 flex flex-col items-center z-[5]">
           <div className="flex items-center gap-2 mb-1">
             <span 
@@ -604,13 +631,9 @@ export default function ActiveCallModal() {
           )}
         </div>
 
-        {/* ============================================ */}
         {/* CHAT PANEL */}
-        {/* ============================================ */}
-        
         {showChat && (
           <div className="absolute bottom-[200px] left-5 right-5 max-w-[400px] max-h-[350px] bg-[rgba(20,20,30,0.95)] rounded-2xl overflow-hidden z-20 flex flex-col backdrop-blur-lg border border-white/10">
-            {/* Chat Header */}
             <div className="flex justify-between items-center px-4 py-3 border-b border-white/10">
               <span className="text-white text-base font-semibold">Chat</span>
               <button 
@@ -621,7 +644,6 @@ export default function ActiveCallModal() {
               </button>
             </div>
 
-            {/* Chat Messages */}
             <div 
               ref={chatContainerRef}
               className="flex-1 overflow-y-auto p-4 max-h-[200px] space-y-2"
@@ -658,7 +680,6 @@ export default function ActiveCallModal() {
               )}
             </div>
 
-            {/* Chat Input */}
             <div className="flex items-center gap-3 p-3 border-t border-white/10">
               <input
                 type="text"
@@ -684,14 +705,9 @@ export default function ActiveCallModal() {
           </div>
         )}
 
-        {/* ============================================ */}
         {/* BOTTOM CONTROLS */}
-        {/* ============================================ */}
-        
         <div className="absolute bottom-0 left-0 right-0 px-5 pt-5 pb-10 bg-black/60 z-[5]">
-          {/* Emoji Row */}
           <div className="flex justify-center gap-3 mb-5">
-            {/* Chat Toggle Button */}
             <button
               onClick={() => setShowChat(!showChat)}
               className={`w-11 h-11 rounded-full flex items-center justify-center text-xl transition-colors ${
@@ -704,7 +720,6 @@ export default function ActiveCallModal() {
               💬
             </button>
             
-            {/* Emoji Buttons */}
             {CALL_EMOJIS.slice(0, 5).map((emoji, index) => (
               <button
                 key={index}
@@ -717,9 +732,7 @@ export default function ActiveCallModal() {
             ))}
           </div>
 
-          {/* Main Controls Row */}
           <div className="flex justify-center items-center gap-4">
-            {/* Mute Button */}
             <button
               onClick={toggleMute}
               disabled={!isConnected}
@@ -733,7 +746,6 @@ export default function ActiveCallModal() {
               {isMuted ? '🔇' : '🎤'}
             </button>
 
-            {/* Video Toggle Button (Video calls only) */}
             {callState.callType === 'video' && (
               <button
                 onClick={toggleVideo}
@@ -749,7 +761,6 @@ export default function ActiveCallModal() {
               </button>
             )}
 
-            {/* End Call Button */}
             <button
               onClick={handleEndCall}
               className="w-[68px] h-[68px] rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-3xl shadow-lg shadow-red-500/40 transition-colors cursor-pointer"
