@@ -13,6 +13,7 @@ import TopIndividuals from "./components/home/TopIndividuals";
 import AvailabilityToast from "./components/shared/availability-toast";
 import WelcomeModalClient from "./components/modals/WelcomeModalClient";
 import BestMatchModalClient from "./components/modals/BestMatchModalClient";
+import SignInModalClient from "./components/signinModel/SignInModalClient";
 
 export const metadata: Metadata = {
   title: "Colio",
@@ -47,6 +48,7 @@ export default function Home() {
       <Footer />
        <WelcomeModalClient />
        <BestMatchModalClient />
+       <SignInModalClient/> 
     </main>
   );
 }

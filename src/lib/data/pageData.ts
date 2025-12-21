@@ -17,7 +17,6 @@ export const Headerdata: HeaderItem[] = [
 // const basePath = process.env.NODE_ENV === "production" ? "/crypto-nextjs" : "";
 const basePath = "";
 
-
 // ✅ Company Logos
 export const Companiesdata: { imgSrc: string }[] = [
   { imgSrc: `${basePath}/images/companies/birdseye.svg` },
@@ -118,4 +117,6 @@ export const Footerlinkdata: FooterType[] = [
   { label: "Features", href: "/#features-section" },
   { label: "FAQ", href: "/#faq-section" },
   { label: "Contact Us", href: "/#contact" },
+  { label: "Privacy Policy", href: "/privacy-policy" },
+  { label: "Terms & Conditions", href: "/terms-and-conditions" },
 ];

@@ -105,7 +105,7 @@ const Footer = () => {
                     width={20}
                     height={20}
                   />
-                  +91 98765 *****
+                  +91 9319353953
                 </Link>
               </li>
 
@@ -120,7 +120,7 @@ const Footer = () => {
                     width={20}
                     height={20}
                   />
-                  support@colio.app
+                  thisiscolio@gmail.com
                 </Link>
               </li>
             </ul>
@@ -131,7 +131,7 @@ const Footer = () => {
       {/* --- Bottom Bar --- */}
       <div className="relative border-t border-white/10 py-6 px-4 text-center z-10">
         <p className="text-white/70 text-sm">
-          © {new Date().getFullYear()} Colio | All Rights Reserved. 
+          © {new Date().getFullYear()} Colio Tech Private Limited | All Rights Reserved. 
         </p>
       </div>
     </footer>

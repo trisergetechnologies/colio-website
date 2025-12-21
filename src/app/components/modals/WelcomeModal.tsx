@@ -5,13 +5,19 @@ import { X } from "lucide-react";
 import { dancingScript } from "@/app/layout";
 import { colors } from "@/constants/colors";
 
-
 type Props = {
   open: boolean;
   onClose: () => void;
 };
 
 export default function WelcomeModal({ open, onClose }: Props) {
+  // Handle close and dispatch event for BestMatchModal
+  const handleClose = () => {
+    onClose();
+    // Dispatch event to trigger BestMatchModal (for logged-in users)
+    window.dispatchEvent(new Event("download-app-closed"));
+  };
+
   return (
     <AnimatePresence>
       {open && (
@@ -20,6 +26,7 @@ export default function WelcomeModal({ open, onClose }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          onClick={handleClose} // Close when clicking backdrop
         >
           {/* Modal Card */}
           <motion.div
@@ -27,6 +34,7 @@ export default function WelcomeModal({ open, onClose }: Props) {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ duration: 0.35, ease: "easeOut" }}
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking modal
             className="
               relative
               w-[92%] max-w-[420px]
@@ -41,7 +49,7 @@ export default function WelcomeModal({ open, onClose }: Props) {
           >
             {/* Close */}
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="absolute top-4 right-4 text-white/70 hover:text-white"
             >
               <X size={22} />
@@ -90,6 +98,7 @@ export default function WelcomeModal({ open, onClose }: Props) {
 
             {/* Download App */}
             <button
+              onClick={handleClose}
               className="
                 mt-4
                 w-full
