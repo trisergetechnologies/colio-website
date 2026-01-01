@@ -13,6 +13,9 @@ export interface SessionData {
 export interface StartSessionResponse {
   ok: boolean;
   session: SessionData;
+  errorCode: string;
+  error: string;
+
 }
 
 export async function startCallSession(
@@ -30,11 +33,10 @@ export async function startCallSession(
     );
 
     console.log('[API] Raw response:', response.data);
-
     // ✅ Backend returns: { ok: true, session: { id, channelName, rtcToken, type } }
     if (!response.data.ok || !response.data.session) {
       console.error('[API] ❌ Invalid response format:', response.data);
-      throw new Error('Invalid response from server');
+      throw new Error(response.data.error);
     }
 
     const session = response.data.session;
@@ -51,7 +53,7 @@ export async function startCallSession(
     console.error('[API] ❌ Start session error:', error);
     if (error.response) {
       console.error('[API] Response status:', error.response.status);
-      console.error('[API] Response data:', error.response.data);
+      console.error('[API] Response data:', error.response.data.error);
     }
     throw error;
   }

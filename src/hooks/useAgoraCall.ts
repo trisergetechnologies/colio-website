@@ -95,7 +95,7 @@ export function useAgoraCall({ consultantId, callType, userToken }: UseAgoraCall
       }
 
       console.log('[Web Call] ✅ Call initialized');
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Web Call] ❌ Init error:', error);
       setCallStatus('Failed to connect');
       alert('Failed to start call');

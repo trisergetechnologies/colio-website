@@ -5,9 +5,11 @@ import { useEffect, useState, useRef } from 'react';
 import { startCallSession } from '@/lib/api/communication';
 import { getToken } from '@/lib/utils/tokenHelper';
 import { useCall } from '@/context/CallContext';
+import { useRouter } from 'next/navigation';
 
 export default function DeviceCheckModal() {
   const { callState, setSessionData, setError, endCall } = useCall();
+  const router = useRouter();
   
   // ============================================
   // STATE
@@ -161,7 +163,10 @@ export default function DeviceCheckModal() {
       console.error('[DeviceCheck] ❌ Error:', error);
       console.error('[DeviceCheck] ========================================');
       setSessionCreated(false);
-      setError(error.message || 'Failed to start call');
+      setError(error.response.data.error || 'Failed to start call');
+      if(error.response.data.errorCode == 'INSUFFICIENT_BALANCE'){
+        router.push('/recharge');
+      }
     } finally {
       setIsConnecting(false);
     }

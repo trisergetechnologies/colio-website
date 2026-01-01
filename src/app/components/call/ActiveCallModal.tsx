@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { endCallSession } from '@/lib/api/communication';
 import { getToken } from '@/lib/utils/tokenHelper';
 import { useCall } from '@/context/CallContext';
+import axios from 'axios';
 import {
   getInCallMessages,
   sendInCallMessage,
@@ -14,6 +15,7 @@ import {
 import { CALL_EMOJIS, POLLING_INTERVALS } from '@/constants/chatConstants';
 
 const AGORA_APP_ID = '8b9ed38f29bb4b1bbc7958f5fda8b054';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.colio.in/api';
 
 // ============================================
 // TYPES
@@ -117,6 +119,62 @@ export default function ActiveCallModal() {
     // Set user ID immediately on mount
     currentUserIdRef.current = getCurrentUserId();
   }, []);
+
+// ✅ POLL SESSION STATUS WHILE RINGING
+useEffect(() => {
+  if (callState.stage !== 'ringing' || !callState.sessionId) return;
+
+  const pollSessionStatus = async () => {
+    try {
+      const token = getToken();
+      if (!token) return;
+
+      const response = await axios.get(
+        `${API_BASE_URL}/session/${callState.sessionId}/status`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      console.log("[useEffect error active call..session status polling]",response)
+      if (response.data.success) {
+        const { status } = response.data.data;
+        
+        // If session ended (declined, missed, etc.) - stop ringing
+        if (status === 'ended') {
+          console.log('[ActiveCall] 📞 Call was declined/ended by consultant');
+          
+          // Stop ringtone
+          if (ringtoneRef.current && isRingtonePlayingRef.current) {
+            ringtoneRef.current.pause();
+            ringtoneRef.current.currentTime = 0;
+            isRingtonePlayingRef.current = false;
+          }
+          
+          // Cleanup and end
+          await cleanup();
+          endCall();
+        }
+      }
+    } catch (error: any) {
+      // 404 means session doesn't exist anymore
+      if (error.response?.status === 404) {
+        console.log('[ActiveCall] 📞 Session not found - ending call');
+        await cleanup();
+        endCall();
+      } else {
+        console.error('[ActiveCall] Session poll error:', error);
+      }
+    }
+  };
+
+  // Poll every 2 seconds while ringing
+  const pollInterval = setInterval(pollSessionStatus, 2000);
+
+  // Also check immediately
+  pollSessionStatus();
+
+  return () => clearInterval(pollInterval);
+}, [callState.stage, callState.sessionId]);
 
   // 🔔 RINGTONE SETUP
   useEffect(() => {
