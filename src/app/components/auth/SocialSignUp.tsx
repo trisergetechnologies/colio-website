@@ -1,6 +1,10 @@
+// components/SocialSignUp.tsx
+"use client";
+
 import React from 'react'
-import {getGoogleOAuthURL} from '@/lib/utils/googleClient'
+import { getGoogleOAuthURL } from '@/lib/utils/googleClient'
 import toast from 'react-hot-toast';
+
 const SocialSignUp = () => {
 
   const handleGoogleLogin = () => {
@@ -14,48 +18,26 @@ const SocialSignUp = () => {
   };
 
   return (
-    <>
-      <div className='flex gap-4'>
-        <button onClick={()=> handleGoogleLogin()} className='flex w-full mt-6 items-center justify-center gap-2.5 rounded-lg p-3.5 bg-linear-to-r from-primary/60 to-secondary/60 hover:from-primary hover:to-secondary text-white cursor-pointer'>
-          <svg
-            width='23'
-            height='22'
-            viewBox='0 0 23 22'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'>
-            <g clipPath='url(#clip0_709_8846)'>
-              <path
-                d='M22.5001 11.2438C22.5134 10.4876 22.4338 9.73256 22.2629 8.995H11.7246V13.0771H17.9105C17.7933 13.7929 17.5296 14.478 17.1352 15.0914C16.7409 15.7047 16.224 16.2335 15.6158 16.646L15.5942 16.7827L18.9264 19.3124L19.1571 19.335C21.2772 17.4161 22.4997 14.5926 22.4997 11.2438'
-                fill='#4285F4'
-              />
-              <path
-                d='M11.7245 22C14.755 22 17.2992 21.0221 19.1577 19.3355L15.6156 16.6464C14.6679 17.2944 13.3958 17.7467 11.7245 17.7467C10.3051 17.7385 8.92433 17.2926 7.77814 16.472C6.63195 15.6515 5.77851 14.4981 5.33892 13.1755L5.20737 13.1865L1.74255 15.8142L1.69727 15.9376C2.63043 17.7602 4.06252 19.2925 5.83341 20.3631C7.60429 21.4337 9.64416 22.0005 11.7249 22'
-                fill='#34A853'
-              />
-              <path
-                d='M5.33889 13.1755C5.09338 12.4753 4.96669 11.7404 4.96388 11C4.9684 10.2608 5.09041 9.52685 5.32552 8.8245L5.31927 8.67868L1.81196 6.00867L1.69724 6.06214C0.910039 7.5938 0.5 9.28491 0.5 10.9999C0.5 12.7148 0.910039 14.406 1.69724 15.9376L5.33889 13.1755Z'
-                fill='#FBBC05'
-              />
-              <path
-                d='M11.7249 4.25337C13.3333 4.22889 14.8888 4.8159 16.065 5.89121L19.2329 2.86003C17.2011 0.992106 14.5106 -0.0328008 11.7249 3.27798e-05C9.64418 -0.000452376 7.60433 0.566279 5.83345 1.63686C4.06256 2.70743 2.63046 4.23965 1.69727 6.06218L5.32684 8.82455C5.77077 7.50213 6.62703 6.34962 7.77491 5.5295C8.9228 4.70938 10.3044 4.26302 11.7249 4.25337Z'
-                fill='#EB4335'
-              />
-            </g>
-            <defs>
-              <clipPath id='clip0_709_8846'>
-                <rect
-                  width='22'
-                  height='22'
-                  fill='white'
-                  transform='translate(0.5)'
-                />
-              </clipPath>
-            </defs>
+    <div className='w-full'>
+        <button 
+            onClick={() => handleGoogleLogin()} 
+            className="group flex w-full items-center justify-center gap-3 rounded-full bg-white py-4 font-bold text-slate-900 transition hover:bg-slate-100 active:scale-95 shadow-sm"
+        >
+          <svg 
+            width='20' 
+            height='20' 
+            viewBox='0 0 24 24' 
+            xmlns='http://www.w3.org/2000/svg'
+            className="transition group-hover:scale-110"
+          >
+            <path d='M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z' fill='#4285F4' />
+            <path d='M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z' fill='#34A853' />
+            <path d='M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z' fill='#FBBC05' />
+            <path d='M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z' fill='#EA4335' />
           </svg>
-          Sign Up
+          Sign Up with Google
         </button>
-      </div>
-    </>
+    </div>
   )
 }
 

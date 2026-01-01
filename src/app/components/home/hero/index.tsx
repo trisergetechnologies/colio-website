@@ -71,18 +71,16 @@ export default function Banner() {
                 backgroundImage: `linear-gradient(90deg, ${colors.button.start}, ${colors.button.end})`,
               }}
             >
-              Connect Beyond the Screen
+              Premium Video Chat for Effortless Friendships
             </span>
             <br />
             <span className="text-white drop-shadow-[0_0_15px_rgba(217,70,239,0.4)]">
-              Real People. Real Energy.
+              Flow into Chats That Feel Like Home.
             </span>
           </h1>
 
           <p className="text-white/85 text-lg md:text-xl max-w-[90%] lg:max-w-[550px] mx-auto lg:mx-0 mb-10 leading-relaxed">
-            Talk it out. Chill it out. Colio it out with genuine individuals:
-            All within a safe, secure, and premium app experience built for the
-            next generation of digital connection.
+            Experience the future of social connection with Colio's intuitive 1v1 video chat app. Jump into safe, high-quality calls with real individuals worldwide—no bots, just pure flow. Tailored for the bold explorer: moderated safety, instant matches, and vibes that turn strangers into stories.
           </p>
 
           <div className="flex flex-wrap justify-center lg:justify-start gap-6">
