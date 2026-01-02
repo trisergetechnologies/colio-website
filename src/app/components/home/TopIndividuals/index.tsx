@@ -174,7 +174,7 @@ export default function TopIndividuals() {
     return () => {
       mounted = false;
     };
-  }, [isAuthenticated, isAuthLoading, API_BASE_URL]);
+  }, []);
 
   /* ---------------- handlers (unchanged) ---------------- */
 
