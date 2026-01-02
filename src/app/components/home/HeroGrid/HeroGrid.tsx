@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
 
 // --- Types ---
 type Profile = {
@@ -51,24 +52,19 @@ const ImageWithFallback = ({ src, alt, className }: { src: string; alt: string; 
 
 export default function HeroGrid() {
   const [profiles, setProfiles] = useState<Profile[]>(FALLBACK_PROFILES);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true); 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const {isAuthenticated, isAuthLoading} = useAuth();
   
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.colio.in/api";
 
   // --- 1. AUTH & SCROLL LOCK LOGIC ---
   useEffect(() => {
     const checkAuthAndScroll = () => {
-      const token = localStorage.getItem("accessToken");
       const isMobile = window.innerWidth < 768; // Check if user is on mobile
 
-      if (token) {
-        setIsAuthenticated(true);
+      if (isAuthenticated) {
         // Always allow scroll if logged in
         document.body.style.overflow = "auto";
       } else {
-        setIsAuthenticated(false);
-        
         // CRITICAL FIX: Only lock scroll if on MOBILE
         if (isMobile) {
           document.body.style.overflow = "hidden";
@@ -77,7 +73,6 @@ export default function HeroGrid() {
           document.body.style.overflow = "auto";
         }
       }
-      setIsCheckingAuth(false);
     };
 
     // Run initial check
@@ -93,40 +88,6 @@ export default function HeroGrid() {
     };
   }, []);
 
-  // --- 2. DATA FETCHING ---
-  useEffect(() => {
-    if (isAuthenticated) return; 
-
-    const fetchAndCacheProfiles = async () => {
-      const cachedData = localStorage.getItem("hero_profiles_cache");
-      if (cachedData) {
-        setProfiles(JSON.parse(cachedData));
-      }
-
-      try {
-        const res = await axios.get(`${API_BASE_URL}/customer/consultants?limit=15`, { timeout: 2500 });
-        const rawData = res.data?.data?.consultants || res.data?.data || [];
-        
-        if (Array.isArray(rawData) && rawData.length > 0) {
-          const formattedProfiles = rawData.map((c: any, index) => ({
-            id: c.id || c._id,
-            avatar: c.avatar || `/images/avatar/${(index % 7) + 1}.jpg`, 
-          }));
-          localStorage.setItem("hero_profiles_cache", JSON.stringify(formattedProfiles));
-          setProfiles(formattedProfiles);
-        }
-      } catch (error) {
-        // Silent fail
-      }
-    };
-    fetchAndCacheProfiles();
-  }, [API_BASE_URL, isAuthenticated]);
-
-
-  // --- CONDITIONAL RENDERING ---
-  if (isCheckingAuth || isAuthenticated) {
-    return null; 
-  }
 
   // --- RENDER COMPONENT ---
   const ProfileCard = ({ profile, className }: { profile: Profile; className?: string }) => (
@@ -172,7 +133,7 @@ export default function HeroGrid() {
       <div className="absolute inset-0 z-40 flex flex-col justify-end items-center pb-20 px-6 pointer-events-none bg-gradient-to-t from-[#0f0f11] via-[#0f0f11]/60 to-transparent">
         
         <h1 className="text-4xl font-extrabold text-white text-center mb-8 drop-shadow-2xl pointer-events-auto tracking-tight">
-          Welcome to Colio.
+          Welcome to Colio
         </h1>
 
         {/* --- PREMIUM COMPACT BUTTON --- */}

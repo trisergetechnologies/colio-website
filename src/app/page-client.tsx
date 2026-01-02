@@ -6,7 +6,9 @@ import HeroGrid from "./components/home/HeroGrid/HeroGrid";
 const HeroGridPageClient = () => {
   const { user, isAuthLoading, isAuthenticated, logout } = useAuth();
 
-if(!isAuthenticated) return <HeroGrid/>
+  if (isAuthLoading) return <div className="bg-black"></div>;
+
+  if (!isAuthenticated) return <HeroGrid />;
   return <div></div>;
 };
 

@@ -1,25 +1,25 @@
 // components/home/TopIndividuals.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
-import { motion } from "framer-motion";
-import {
-  IoCallOutline,
-  IoChatbubbleOutline,
-  IoVideocamOutline,
-  IoAdd,
-  IoStar,
-  IoStarOutline,
-  IoArrowForward,
-} from "react-icons/io5";
 import { colors, gradientStyles } from "@/constants/colors";
+import { useAuth } from "@/context/AuthContext";
+import { useCall } from "@/context/CallContext";
+import { getToken } from "@/lib/utils/tokenHelper";
+import axios from "axios";
+import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import axios from "axios";
-import { useAuth } from "@/context/AuthContext";
-import { getToken } from "@/lib/utils/tokenHelper";
-import { useCall } from "@/context/CallContext";
+import { useEffect, useState } from "react";
+import {
+  IoAdd,
+  IoArrowForward,
+  IoCallOutline,
+  IoChatbubbleOutline,
+  IoStar,
+  IoStarOutline,
+  IoVideocamOutline,
+} from "react-icons/io5";
 
 /* ---------------- types ---------------- */
 
@@ -39,35 +39,35 @@ type Profile = {
 const DEMO_PROFILES: Profile[] = [
   {
     id: "1",
-    name: "Aarav Mehta",
+    name: "Sonali Mehta",
     age: 24,
-    gender: "Male",
+    gender: "Female",
     languages: ["English", "Hindi"],
     rating: 5,
     avatar:
-      "https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=400&h=400&fit=crop&crop=faces",
+      "https://plus.unsplash.com/premium_photo-1668165257976-13771a2fea0e?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     online: true,
   },
   {
     id: "2",
-    name: "Sara Khan",
+    name: "Anvi Singh",
     age: 22,
     gender: "Female",
     languages: ["English", "Urdu"],
     rating: 4,
     avatar:
-      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop&crop=faces",
+      "https://images.unsplash.com/photo-1559551538-96c62c56b256?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     online: true,
   },
   {
     id: "3",
-    name: "Vihaan Kapoor",
+    name: "Vihaana Kapoor",
     age: 26,
-    gender: "Male",
+    gender: "Female",
     languages: ["English", "Hindi", "Marathi"],
     rating: 5,
     avatar:
-      "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=400&h=400&fit=crop&crop=faces",
+      "https://images.unsplash.com/photo-1596937098204-3900ffd6c0ed?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     online: true,
   },
   {
@@ -78,7 +78,7 @@ const DEMO_PROFILES: Profile[] = [
     languages: ["English", "Bengali", "Hindi"],
     rating: 4,
     avatar:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&crop=faces",
+      "https://images.unsplash.com/photo-1651132160363-44b1feff7e15?q=80&w=1976&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     online: true,
   },
 ];
