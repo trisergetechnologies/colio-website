@@ -38,7 +38,7 @@ export default function Home() {
     <main>
       <Header />
       <AvailabilityToast />
-      {/* <HeroGrid/> */}
+      <HeroGrid/>
       <Banner/>
       <TopIndividuals />
       {/* <Work /> */}
