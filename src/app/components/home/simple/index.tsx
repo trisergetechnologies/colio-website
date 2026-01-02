@@ -1,103 +1,111 @@
 "use client";
 
-import Link from "next/link";
+import React from "next/link";
 import { motion } from "framer-motion";
-import { colors, gradientStyles } from "@/constants/colors";
 
-export default function Simple() {
+// --- Feature Data ---
+const FEATURES = [
+  {
+    id: 1,
+    title: "Verified Profiles",
+    desc: "No bots. No fakes. Every user is verified for authentic connections.",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    color: "from-violet-500 to-fuchsia-500",
+  },
+  {
+    id: 2,
+    title: "HD Video Calls",
+    desc: "Experience crystal clear, low-latency video designed for intimacy.",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
+      </svg>
+    ),
+    color: "from-blue-500 to-cyan-500",
+  },
+  {
+    id: 3,
+    title: "Private & Secure",
+    desc: "Your privacy is our priority. End-to-end encryption on every call.",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+      </svg>
+    ),
+    color: "from-emerald-400 to-teal-500",
+  },
+];
+
+export default function FeaturesSection() {
   return (
-    <section
-      id="simple-section"
-      className="relative overflow-hidden py-28 md:py-36"
-      style={{
-        background: `linear-gradient(180deg, ${colors.background.end} 0%, #0f0f11 100%)`,
-      }}
-    >
-      {/* ✨ Ambient floating gradients */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-[15%] left-[10%] w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(217,70,239,0.25),transparent_70%)] blur-3xl animate-float"></div>
-        <div className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(255,255,255,0.08),transparent_80%)] blur-3xl animate-pulse-slow"></div>
-      </div>
+    <section className="relative py-24 px-6 bg-[#0f0f11] overflow-hidden">
+      
+      {/* --- Background Ambient Glow --- */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-full bg-violet-900/10 blur-[120px] pointer-events-none" />
 
-      {/* 🌫 Top fade for section continuity */}
-      <div
-        className="absolute -top-20 left-0 w-full h-[160px] pointer-events-none"
-        style={{
-          background: `linear-gradient(to top, #0f0f11 0%, ${colors.background.end} 75%, transparent 100%)`,
-          filter: "blur(40px)",
-          opacity: 0.9,
-        }}
-      />
-
-      {/* CONTENT */}
-      <div className="relative z-20 container">
-        <motion.div
-          className="max-w-2xl mx-auto text-center"
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          <h2
-            className="font-extrabold text-4xl md:text-5xl mb-6 leading-tight bg-gradient-to-r from-[#f5d0fe] via-[#d946ef] to-[#a21caf] bg-clip-text text-transparent"
-          >
-            Simplicity Meets Real Connection
-          </h2>
-
-          <p className="text-white/85 text-lg md:text-xl leading-relaxed mb-10">
-            Colio makes it effortless to connect with real people.  
-            Secure, transparent, and built for trust — you stay in control  
-            while enjoying authentic moments that truly matter.
-          </p>
-
-          <motion.div
-            className="flex justify-center"
-            initial={{ opacity: 0, y: 30 }}
+      <div className="relative z-10 max-w-6xl mx-auto">
+        
+        {/* --- Header --- */}
+        <div className="text-center mb-16">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7, delay: 0.2 }}
+            className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight"
           >
-            <Link
-              href="/"
-              className="relative inline-block text-lg md:text-xl font-semibold text-white py-4 px-10 md:px-14 rounded-2xl transition-transform duration-300 hover:scale-105"
-              style={{
-                background: `linear-gradient(90deg, ${colors.button.start}, ${colors.button.end})`,
-                boxShadow: `0 0 30px -8px ${colors.button.start}50`,
-              }}
-            >
-              Connect Now
-              {/* Soft glowing border animation */}
-              <motion.span
-                className="absolute inset-0 rounded-2xl border-2 border-transparent"
-                style={{
-                  background: `linear-gradient(90deg, ${colors.button.start}, ${colors.button.end})`,
-                  WebkitMask:
-                    "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                  WebkitMaskComposite: "xor",
-                  maskComposite: "exclude",
-                }}
-                animate={{
-                  opacity: [0.6, 1, 0.6],
-                  scale: [1, 1.04, 1],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-            </Link>
-          </motion.div>
-        </motion.div>
-      </div>
+            The <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-blue-400">Colio Standard</span>
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-gray-400 max-w-2xl mx-auto text-lg"
+          >
+            Built for those who value quality, speed, and discretion.
+          </motion.p>
+        </div>
 
-      {/* 🌌 Bottom fade transition to Trade section */}
-      <div
-        className="absolute bottom-0 left-0 w-full h-[220px] pointer-events-none"
-        style={{
-          background: `linear-gradient(to bottom, rgba(15,15,17,0) 0%, rgba(15,15,17,0.9) 60%, ${colors.background.end} 100%)`,
-        }}
-      />
+        {/* --- Grid Cards --- */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {FEATURES.map((item, index) => (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.2 }}
+              className="group relative p-1 rounded-3xl bg-gradient-to-b from-white/10 to-white/5 hover:to-white/10 transition-colors duration-500"
+            >
+              {/* Card Inner Content */}
+              <div className="relative h-full bg-[#131316] rounded-[22px] p-8 overflow-hidden">
+                
+                {/* Hover Glow Effect */}
+                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${item.color} blur-[60px] opacity-0 group-hover:opacity-20 transition-opacity duration-500`} />
+                
+                {/* Icon Box */}
+                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center text-white shadow-lg mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                  {item.icon}
+                </div>
+
+                {/* Text */}
+                <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
+                <p className="text-gray-400 leading-relaxed text-sm md:text-base">
+                  {item.desc}
+                </p>
+
+                {/* Decorative Bottom Line */}
+                <div className={`absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r ${item.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+      </div>
     </section>
   );
 }
