@@ -14,6 +14,7 @@ import AvailabilityToast from "./components/shared/availability-toast";
 import WelcomeModalClient from "./components/modals/WelcomeModalClient";
 import BestMatchModalClient from "./components/modals/BestMatchModalClient";
 import SignInModalClient from "./components/signinModel/SignInModalClient";
+import HeroGrid from "./components/home/HeroGrid/HeroGrid";
 
 export const metadata: Metadata = {
   title: "Colio",
@@ -37,13 +38,14 @@ export default function Home() {
     <main>
       <Header />
       <AvailabilityToast />
+      {/* <HeroGrid/> */}
       <Banner/>
       <TopIndividuals />
       {/* <Work /> */}
       {/* <Features /> */}
       <Simple />
       <Faq />
-      <AppDownloadSection/>
+      {/* <AppDownloadSection/> */}
       <ContactForm />
       <Footer />
        <WelcomeModalClient />

@@ -13,6 +13,7 @@ import {
   Message,
 } from '@/lib/api/chat';
 import { CALL_EMOJIS, POLLING_INTERVALS } from '@/constants/chatConstants';
+import { useAuth } from '@/context/AuthContext';
 
 const AGORA_APP_ID = '8b9ed38f29bb4b1bbc7958f5fda8b054';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.colio.in/api';
@@ -52,6 +53,7 @@ const MicOffIcon = () => (
 
 export default function ActiveCallModal() {
   const { callState, setCallStage, endCall, setError } = useCall();
+  const {user} = useAuth();
 
   // ============================================
   // HELPER: ROBUST USER ID FETCHING
@@ -59,17 +61,7 @@ export default function ActiveCallModal() {
   // ============================================
   const getCurrentUserId = (): string => {
     if (typeof window === 'undefined') return '';
-    try {
-      const userStr = localStorage.getItem('user');
-      if (userStr) {
-        const user = JSON.parse(userStr);
-        // Check all common ID fields to ensure we get the ID regardless of object structure
-        return user._id || user.id || user.userId || '';
-      }
-    } catch (e) {
-      console.error('[ActiveCall] Error getting user ID:', e);
-    }
-    return '';
+    return user?.userId || '';
   };
 
   // ============================================
@@ -120,9 +112,11 @@ export default function ActiveCallModal() {
     currentUserIdRef.current = getCurrentUserId();
   }, []);
 
-// ✅ POLL SESSION STATUS WHILE RINGING
+// ✅ POLL SESSION STATUS - Handles: Decline, Missed, Auto-End (balance depleted)
 useEffect(() => {
-  if (callState.stage !== 'ringing' || !callState.sessionId) return;
+  // Poll during ringing (for decline/missed) AND connected (for auto-end)
+  if (callState.stage !== 'ringing' && callState.stage !== 'connected') return;
+  if (!callState.sessionId) return;
 
   const pollSessionStatus = async () => {
     try {
@@ -135,28 +129,36 @@ useEffect(() => {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
-      console.log("[useEffect error active call..session status polling]",response)
+
       if (response.data.success) {
-        const { status } = response.data.data;
-        
-        // If session ended (declined, missed, etc.) - stop ringing
+        const { status, autoEnded } = response.data.data;
+        console.log(response.data);
+
         if (status === 'ended') {
-          console.log('[ActiveCall] 📞 Call was declined/ended by consultant');
-          
-          // Stop ringtone
+          // Determine the reason for ending
+          if (autoEnded) {
+            console.log('[ActiveCall] 💰 Call auto-ended - balance depleted');
+            // Optionally show a message to user
+            setError('Call ended - insufficient balance');
+          } else if (callState.stage === 'ringing') {
+            console.log('[ActiveCall] 📞 Call was declined/missed by consultant');
+          } else {
+            console.log('[ActiveCall] 📞 Call ended by other party');
+          }
+
+          // Stop ringtone if playing
           if (ringtoneRef.current && isRingtonePlayingRef.current) {
             ringtoneRef.current.pause();
             ringtoneRef.current.currentTime = 0;
             isRingtonePlayingRef.current = false;
           }
-          
+
           // Cleanup and end
           await cleanup();
           endCall();
         }
       }
     } catch (error: any) {
-      // 404 means session doesn't exist anymore
       if (error.response?.status === 404) {
         console.log('[ActiveCall] 📞 Session not found - ending call');
         await cleanup();
@@ -167,10 +169,11 @@ useEffect(() => {
     }
   };
 
-  // Poll every 2 seconds while ringing
-  const pollInterval = setInterval(pollSessionStatus, 2000);
+  // Poll interval: 2s during ringing, 5s during connected (less aggressive)
+  const interval = callState.stage === 'ringing' ? 2000 : 5000;
+  const pollInterval = setInterval(pollSessionStatus, interval);
 
-  // Also check immediately
+  // Check immediately on mount
   pollSessionStatus();
 
   return () => clearInterval(pollInterval);
@@ -491,6 +494,7 @@ useEffect(() => {
   // ============================================
   const isOwnMessage = (message: Message): boolean => {
     const currentUserId = currentUserIdRef.current;
+    console.log('currentUserId', currentUserId);
     if (!currentUserId) return false;
 
     // Handle case where sender is an object (populated) or just a string ID
