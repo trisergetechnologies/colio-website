@@ -183,8 +183,13 @@ const handleChat = () => {
     router.push("/signin");
     return;
   }
-
-  router.push(`/chat/${consultant.id}`);
+    const params = new URLSearchParams({
+      participantId: consultant.id,
+      participantName: consultant.name,
+      participantAvatar: consultant.avatar || '',
+      availabilityStatus: consultant.availabilityStatus || 'offWork',
+    });
+    router.push(`/chat/new?${params.toString()}`);
 };
 
 
@@ -251,26 +256,26 @@ const handleChat = () => {
           </div>
 
           {/* Actions */}
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-4">
-  <Action
-    icon={<Phone />}
-    price={consultant.ratePerMinute || 10}
-    onClick={handleVoiceCall}
-  />
+          {/* <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-4">
+            <Action
+              icon={<Phone />}
+              price={consultant.ratePerMinute || 10}
+              onClick={handleVoiceCall}
+            />
 
-  <Action
-    icon={<MessageCircle />}
-    price={Math.max((consultant.ratePerMinute || 10) / 2, 5)}
-    highlight
-    onClick={handleChat}
-  />
+            <Action
+              icon={<MessageCircle />}
+              price={Math.max((consultant.ratePerMinute || 10) / 2, 5)}
+              highlight
+              onClick={handleChat}
+            />
 
-  <Action
-    icon={<Video />}
-    price={(consultant.ratePerMinute || 10) * 2}
-    onClick={handleVideoCall}
-  />
-</div>
+            <Action
+              icon={<Video />}
+              price={(consultant.ratePerMinute || 10) * 2}
+              onClick={handleVideoCall}
+            />
+          </div> */}
 
 
           {/* Bottom Info */}
@@ -330,7 +335,7 @@ function Action({
       >
         {icon}
       </button>
-      <span className="mt-1 text-xs text-white/90">₹{price}/min</span>
+      {/* <span className="mt-1 text-xs text-white/90">₹{price}/min</span> */}
     </div>
   );
 }
