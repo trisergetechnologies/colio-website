@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { getToken } from "@/lib/utils/tokenHelper";
 import axios from "axios";
-import { Coins, ArrowLeft, Loader2, CreditCard } from "lucide-react";
-import { getToken } from "@/lib/utils/tokenHelper"; 
+import { motion } from "framer-motion";
+import { ArrowLeft, Coins, CreditCard, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+const { load }: { load: any } = require("@cashfreepayments/cashfree-js");
 
 const API_BASE_URL = "https://api.colio.in/api";
 
@@ -70,54 +71,34 @@ export default function RechargePage() {
   }, []);
 
   // Handle Recharge Submit
-  const handleRecharge = async () => {
-    setError(null);
-    setSuccessMsg(null);
-    const amount = Number(rechargeAmount);
+const handleRecharge = async () => {
+  try {
+    setIsProcessing(true);
 
-    if (!amount || isNaN(amount) || amount < 50) {
-      setError("Minimum recharge amount is ₹50");
-      return;
-    }
+    const token = getToken();
+    const { data } = await axios.post(
+      `${API_BASE_URL}/user/rechargewallet`,
+      { amount: Number(rechargeAmount) },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-    try {
-      setIsProcessing(true);
-      const token = getToken();
+    const cashfree = await load({ mode: "production" });
 
-      const response = await axios.post(
-        `${API_BASE_URL}/user/rechargewallet`,
-        { amount, paymentMethod: "demo" }, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    cashfree.checkout({
+      paymentSessionId: data.data.paymentSessionId,
+      redirectTarget: "_modal",
+    });
+    fetchWallet();
 
-      const res = response.data;
-
-      if (res.success) {
-        setSuccessMsg("Recharge Successful! Updating wallet...");
-        
-        if (res.data?.wallet) {
-          setWalletDetails(res.data.wallet);
-          setBalance(res.data.wallet.total);
-        } else {
-            fetchWallet();
-        }
-        
-        setTimeout(() => {
-            router.back();
-        }, 2000);
-      } else {
-        setError(res.message || "Recharge failed");
-      }
-    } catch (err: any) {
-      console.error("Recharge error:", err);
-      setError(err.response?.data?.message || "Payment failed. Server error.");
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+  } catch (err) {
+    setError("Payment initiation failed");
+  } finally {
+    setIsProcessing(false);
+  }
+};
 
   // Quick Amount Pills
-  const quickAmounts = [100, 300, 500, 1000];
+  const quickAmounts = [100, 400, 4000, 20000];
 
   return (
     <div className="min-h-screen bg-[#0F0F0F] flex flex-col items-center pt-8 pb-20 px-4">
@@ -145,39 +126,27 @@ export default function RechargePage() {
                 <Coins size={100} />
             </div>
             
-            <p className="text-white/70 text-sm font-medium">Current Balance</p>
+            <p className="text-white/70 text-sm font-medium">Coins Available</p>
             <div className="flex items-end gap-2 mt-1">
                 <Coins className="text-yellow-400 w-8 h-8 mb-1" />
                 <h2 className="text-4xl font-bold text-white">
                     {isLoading ? "..." : balance}
                 </h2>
             </div>
-            
-            {walletDetails && (
-                <div className="flex gap-6 mt-6 pt-4 border-t border-white/10">
-                    <div>
-                        <p className="text-xs text-indigo-200">Main Wallet</p>
-                        <p className="text-white font-semibold">{walletDetails.main}</p>
-                    </div>
-                    <div>
-                        <p className="text-xs text-indigo-200">Bonus Wallet</p>
-                        <p className="text-white font-semibold">{walletDetails.bonus}</p>
-                    </div>
-                </div>
-            )}
         </motion.div>
 
         {/* Input Section */}
         <div className="bg-[#18181b] border border-white/5 rounded-3xl p-6">
-            <label className="text-sm text-gray-400 block mb-3">Enter Amount (₹)</label>
+            <label className="text-sm text-gray-400 block mb-3">Amount (₹)</label>
             
             <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">₹</span>
                 <input 
                     type="number"
+                    disabled={true}
                     value={rechargeAmount}
                     onChange={(e) => setRechargeAmount(e.target.value)}
-                    placeholder="Enter amount (Min 50)"
+                    placeholder="Select Amount"
                     className="w-full bg-black/40 border border-white/10 rounded-xl py-4 pl-10 pr-4 text-white text-lg focus:outline-none focus:border-pink-500 transition-colors"
                 />
             </div>

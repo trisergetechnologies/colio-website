@@ -1,10 +1,10 @@
 'use client';
 
-import { motion } from "framer-motion";
-import { IoClose } from "react-icons/io5";
-import { Coins } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { motion } from "framer-motion";
+import { Coins } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { IoClose } from "react-icons/io5";
 
 type WalletPopoverProps = {
   onClose?: () => void;
@@ -12,14 +12,14 @@ type WalletPopoverProps = {
 
 // Defined packs
 const coinPacks = [
-  { id: 1, coins: 150, originalPrice: 230, price: 200, discountLabel: "10% OFF", highlight: true },
-  { id: 2, coins: 330, originalPrice: 500, price: 270, discountLabel: "50% OFF", highlight: true },
-  { id: 3, coins: 230, originalPrice: 353, price: 353 },
-  { id: 4, coins: 470, originalPrice: 837, price: 709 },
-  { id: 5, coins: 920, originalPrice: 1704, price: 1363 },
-  { id: 6, coins: 2300, originalPrice: 4566, price: 3407 },
-  { id: 7, coins: 4800, originalPrice: 10042, price: 7022 },
-  { id: 8, coins: 14100, originalPrice: 29709, price: 19291 },
+  { id: 1, coins: 40, originalPrice: 60, price: 50, discountLabel: "20% OFF", highlight: true },
+  { id: 3, coins: 160, originalPrice: 240, price: 200, discountLabel: "20% OFF", highlight: true },
+  { id: 4, coins: 320, originalPrice: 480, price: 400, discountLabel: "20% OFF", highlight: true },
+  { id: 6, coins: 3200, originalPrice: 4800, price: 4000, discountLabel: "20% OFF", highlight: true },
+  { id: 2, coins: 80, originalPrice: 120, price: 100, discountLabel: "20% OFF", highlight: false },
+  { id: 5, coins: 800, originalPrice: 1200, price: 1000, discountLabel: "20% OFF", highlight: false },
+  { id: 7, coins: 8000, originalPrice: 12000, price: 10000, discountLabel: "20% OFF", highlight: false },
+  { id: 8, coins: 16000, originalPrice: 24000, price: 20000, discountLabel: "20% OFF", highlight: false },
 ];
 
 export default function WalletPopover({ onClose }: WalletPopoverProps) {
@@ -119,9 +119,9 @@ export default function WalletPopover({ onClose }: WalletPopoverProps) {
       </div>
 
       <div className="px-6 py-4 border-t border-white/10 text-center">
-        <button onClick={() => router.push('/recharge')} className="text-sm text-white/70 hover:text-white underline decoration-white/30 underline-offset-4">
+        {/* <button onClick={() => router.push('/recharge')} className="text-sm text-white/70 hover:text-white underline decoration-white/30 underline-offset-4">
           Custom Recharge / Payment History
-        </button>
+        </button> */}
       </div>
     </motion.div>
   );

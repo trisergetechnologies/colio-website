@@ -1,6 +1,6 @@
 // lib/api/chat.ts
-import axios from 'axios';
 import { getToken } from '@/lib/utils/tokenHelper';
+import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.colio.in/api';
 
