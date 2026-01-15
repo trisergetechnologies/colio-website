@@ -1,10 +1,16 @@
 'use client';
 
 import { useAuth } from "@/context/AuthContext";
+import { getToken } from "@/lib/utils/tokenHelper";
+import axios from "axios";
 import { motion } from "framer-motion";
 import { Coins } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { IoClose } from "react-icons/io5";
+const { load }: { load: any } = require("@cashfreepayments/cashfree-js");
+
+const API_BASE_URL = "https://api.colio.in/api";
 
 type WalletPopoverProps = {
   onClose?: () => void;
@@ -23,22 +29,50 @@ const coinPacks = [
 ];
 
 export default function WalletPopover({ onClose }: WalletPopoverProps) {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const router = useRouter();
 
   const walletCoins = (user?.wallet?.main ?? 0) + (user?.wallet?.bonus ?? 0);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
 // inside WalletPopover function
 
   const handlePackClick = (amount: number) => {
-    // 1. Close the popover
-    if (onClose) onClose();
+    
     
     // 2. Save amount to Session Storage (Invisible to user)
     sessionStorage.setItem('rechargeAmount', amount.toString());
     
     // 3. Navigate to the clean URL (No ?amount= visible)
     router.push('/recharge'); 
+  };
+
+  const handleRecharge = async (rechargeAmount: number) => {
+    try {
+      setIsProcessing(true);
+      // 1. Close the popover
+      if (onClose) onClose();
+
+      const token = getToken();
+      const { data } = await axios.post(
+        `${API_BASE_URL}/user/rechargewallet`,
+        { amount: Number(rechargeAmount) },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const cashfree = await load({ mode: "production" });
+
+      cashfree.checkout({
+        paymentSessionId: data.data.paymentSessionId,
+        redirectTarget: "_modal",
+      });
+    } catch (err) {
+      setError("Payment initiation failed");
+    } finally {
+      setIsProcessing(false);
+      refreshUser();
+    }
   };
 
   return (
@@ -60,7 +94,8 @@ export default function WalletPopover({ onClose }: WalletPopoverProps) {
         <div>
           <h3 className="text-lg font-semibold text-white">Coin Store</h3>
           <p className="text-sm text-white/60">
-            My Coins: <span className="text-[#f0abfc] font-medium">{walletCoins}</span>
+            My Coins:{" "}
+            <span className="text-[#f0abfc] font-medium">{walletCoins}</span>
           </p>
         </div>
         <button
@@ -71,27 +106,37 @@ export default function WalletPopover({ onClose }: WalletPopoverProps) {
         </button>
       </div>
 
+      {error && (
+        <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+          <p className="text-red-400 text-sm text-center">{error}</p>
+        </div>
+      )}
+
       {/* Scroll Area */}
       <div className="wallet-scroll px-4 py-4 space-y-3 max-h-[420px] overflow-y-auto">
         {coinPacks.map((pack) => (
           <motion.button
             key={pack.id}
-            onClick={() => handlePackClick(pack.price)}
+            disabled={isProcessing}
+            onClick={() => handleRecharge(pack.price)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className={`
               relative w-full flex items-center justify-between
               gap-4 px-4 py-4 rounded-2xl border
-              ${pack.highlight
-                ? "border-[#f0abfc]/40 bg-gradient-to-r from-[#2a0a1f] to-[#3b0a2b]"
-                : "border-white/10 bg-white/5"
+              ${
+                pack.highlight
+                  ? "border-[#f0abfc]/40 bg-gradient-to-r from-[#2a0a1f] to-[#3b0a2b]"
+                  : "border-white/10 bg-white/5"
               }
               backdrop-blur-xl transition-all
             `}
           >
             {pack.discountLabel && (
-              <span className="absolute -top-2 left-1/2 -translate-x-1/2
-                text-[10px] font-semibold px-3 py-1 rounded-full bg-[#fde047] text-black">
+              <span
+                className="absolute -top-2 left-1/2 -translate-x-1/2
+                text-[10px] font-semibold px-3 py-1 rounded-full bg-[#fde047] text-black"
+              >
                 {pack.discountLabel}
               </span>
             )}
@@ -108,9 +153,15 @@ export default function WalletPopover({ onClose }: WalletPopoverProps) {
 
             <div className="text-right">
               {pack.originalPrice !== pack.price && (
-                <p className="text-xs text-white/40 line-through">₹{pack.originalPrice}</p>
+                <p className="text-xs text-white/40 line-through">
+                  ₹{pack.originalPrice}
+                </p>
               )}
-              <p className={`font-semibold ${pack.highlight ? "text-[#fde047]" : "text-white"}`}>
+              <p
+                className={`font-semibold ${
+                  pack.highlight ? "text-[#fde047]" : "text-white"
+                }`}
+              >
                 ₹{pack.price}
               </p>
             </div>

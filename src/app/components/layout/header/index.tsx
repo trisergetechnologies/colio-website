@@ -1,22 +1,20 @@
 "use client";
 
-import { colors } from "@/constants/colors";
+import { dancingScript } from "@/app/layout";
+import { useChat } from "@/context/ChatContext";
 import { Headerdata } from "@/lib/data/pageData";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { AnimatePresence, motion } from "framer-motion";
+import { Coins } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { IoChatbubbles } from "react-icons/io5";
 import Logo from "./logo";
 import HeaderLink from "./navigation/HeaderLink";
-import { dancingScript } from "@/app/layout";
-import { Coins } from "lucide-react";
-import { useChat } from "@/context/ChatContext";
-import { IoChatbubbles } from "react-icons/io5";
 
 import {
   IoLogIn,
-  IoLogoBitcoin,
-  IoPersonCircle,
+  IoPersonCircle
 } from "react-icons/io5";
 
 import { useAuth } from "@/context/AuthContext";
@@ -122,7 +120,7 @@ export default function Header() {
                            hover:bg-white/20 transition"
               >
                 <Coins size={18} color="#EAB308" strokeWidth={2.2} />
-                <span className="text-sm">{walletBalance}</span>
+                <span className="text-sm">{(user?.wallet?.main ?? 0) + (user?.wallet?.bonus ?? 0)}</span>
               </button>
             )}
             {/* MOBILE CHAT */}
@@ -166,7 +164,7 @@ export default function Header() {
                            hover:bg-white/20 transition-all hover:scale-105"
               >
                 <Coins size={24} color="#EAB308" strokeWidth={2.2} />
-                <span className="text-sm">{walletBalance}</span>
+                <span className="text-sm">{(user?.wallet?.main ?? 0) + (user?.wallet?.bonus ?? 0)}</span>
               </a>
             )}
 
