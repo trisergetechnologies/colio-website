@@ -56,36 +56,9 @@ export default function HeroGrid() {
   
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.colio.in/api";
 
-  // --- 1. AUTH & SCROLL LOCK LOGIC ---
+  // --- 1. SCROLL LOGIC (Always enabled) ---
   useEffect(() => {
-    const checkAuthAndScroll = () => {
-      const isMobile = window.innerWidth < 768; // Check if user is on mobile
-
-      if (isAuthenticated) {
-        // Always allow scroll if logged in
-        document.body.style.overflow = "auto";
-      } else {
-        // CRITICAL FIX: Only lock scroll if on MOBILE
-        if (isMobile) {
-          document.body.style.overflow = "hidden";
-        } else {
-          // If on desktop, ensure scroll is free
-          document.body.style.overflow = "auto";
-        }
-      }
-    };
-
-    // Run initial check
-    checkAuthAndScroll();
-
-    // Add resize listener to handle switching between mobile/desktop views
-    window.addEventListener('resize', checkAuthAndScroll);
-
-    // Cleanup
-    return () => {
-      document.body.style.overflow = "auto";
-      window.removeEventListener('resize', checkAuthAndScroll);
-    };
+    document.body.style.overflow = "auto";
   }, []);
 
 

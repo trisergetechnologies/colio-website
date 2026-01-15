@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { X, Bell } from "lucide-react";
 import { dancingScript } from "@/app/layout";
 import { colors } from "@/constants/colors";
 
@@ -11,11 +12,22 @@ type Props = {
 };
 
 export default function WelcomeModal({ open, onClose }: Props) {
+  const [showComingSoon, setShowComingSoon] = useState(false);
+
   // Handle close and dispatch event for BestMatchModal
   const handleClose = () => {
     onClose();
+    setShowComingSoon(false);
     // Dispatch event to trigger BestMatchModal (for logged-in users)
     window.dispatchEvent(new Event("download-app-closed"));
+  };
+
+  const handleDownloadClick = () => {
+    setShowComingSoon(true);
+  };
+
+  const closeComingSoon = () => {
+    setShowComingSoon(false);
   };
 
   return (
@@ -98,7 +110,7 @@ export default function WelcomeModal({ open, onClose }: Props) {
 
             {/* Download App */}
             <button
-              onClick={handleClose}
+              onClick={handleDownloadClick}
               className="
                 mt-4
                 w-full
@@ -119,6 +131,77 @@ export default function WelcomeModal({ open, onClose }: Props) {
               <div>Privacy First</div>
               <div>Best Value</div>
             </div>
+
+            {/* ====== COMING SOON MINI MODAL ====== */}
+            <AnimatePresence>
+              {showComingSoon && (
+                <motion.div
+                  className="absolute inset-0 z-10 flex items-center justify-center rounded-3xl bg-black/60 backdrop-blur-sm"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={closeComingSoon}
+                >
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0, y: 20 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    exit={{ scale: 0.8, opacity: 0, y: 20 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="
+                      relative
+                      w-[85%] max-w-[280px]
+                      rounded-2xl
+                      bg-gradient-to-br from-violet-600/90 to-blue-600/90
+                      backdrop-blur-xl
+                      border border-white/20
+                      shadow-[0_10px_40px_rgba(124,58,237,0.4)]
+                      px-5 py-6
+                      text-center
+                    "
+                  >
+                    {/* Close button */}
+                    <button
+                      onClick={closeComingSoon}
+                      className="absolute top-3 right-3 text-white/70 hover:text-white transition"
+                    >
+                      <X size={18} />
+                    </button>
+
+                    {/* Icon */}
+                    <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-white/20 flex items-center justify-center">
+                      <Bell size={28} className="text-white" />
+                    </div>
+
+                    {/* Text */}
+                    <h3 className="text-xl font-bold text-white mb-2">
+                      Coming Soon!
+                    </h3>
+                    <p className="text-white/80 text-sm mb-4">
+                      Our app is under development. Stay tuned for updates!
+                    </p>
+
+                    {/* Got it button */}
+                    <button
+                      onClick={closeComingSoon}
+                      className="
+                        w-full
+                        rounded-full
+                        py-2.5
+                        bg-white
+                        text-violet-600
+                        font-semibold
+                        text-sm
+                        hover:bg-white/90
+                        transition
+                      "
+                    >
+                      Got it!
+                    </button>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </motion.div>
       )}

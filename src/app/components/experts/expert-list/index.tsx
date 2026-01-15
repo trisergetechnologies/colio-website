@@ -344,8 +344,14 @@ export default function ExpertsList() {
     }, 3000);
   };
 
-  const startChat = (consultantId: string) => {
-    router.push(`/chat/${consultantId}`);
+  const startChat = (consultant: Consultant) => {
+    const params = new URLSearchParams({
+      participantId: consultant.id,
+      participantName: consultant.name,
+      participantAvatar: consultant.avatar || '',
+      availabilityStatus: consultant.availabilityStatus || 'offWork',
+    });
+    router.push(`/chat/new?${params.toString()}`);
   };
 
   // Search filtering
@@ -528,7 +534,7 @@ export default function ExpertsList() {
                       </button>
 
                       <button
-                        onClick={(e) => { e.stopPropagation(); startChat(id); }}
+                        onClick={(e) => { e.stopPropagation(); startChat(c); }}
                         className="p-3 rounded-full border border-white/10 bg-black hover:bg-white/20 transition"
                         title="Chat"
                       >
