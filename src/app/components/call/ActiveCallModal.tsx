@@ -278,7 +278,7 @@ useEffect(() => {
 
   const initializeAgora = async () => {
     try {
-      const { default: AgoraClient } = await import('@/lib/agora/agoraClient');
+      const { default: AgoraClient } = await import("@/lib/agora/agoraClient");
       const client = new AgoraClient();
       agoraClientRef.current = client;
 
@@ -291,11 +291,11 @@ useEffect(() => {
 
         setRemoteUid(user.uid);
         setIsConnected(true);
-        setCallStage('connected');
+        setCallStage("connected");
 
-        if (callState.callType === 'video' && user.videoTrack) {
+        if (callState.callType === "video" && user.videoTrack) {
           setTimeout(() => {
-            client.playRemoteVideo(user, 'remote-video');
+            client.playRemoteVideo(user, "remote-video");
           }, 200);
         }
 
@@ -314,20 +314,56 @@ useEffect(() => {
         handleEndCall();
       });
 
+      // ✅ NEW: Handle being kicked from channel (balance depleted)
+      client.onConnectionStateChange((curState, prevState, reason) => {
+        console.log(
+          "[ActiveCall] Connection state:",
+          prevState,
+          "->",
+          curState,
+          "Reason:",
+          reason,
+        );
+
+        // Handle being kicked by backend (balance depleted)
+        if (curState === "DISCONNECTED" && reason === "BANNED_BY_SERVER") {
+          console.log("[ActiveCall] ⛔ Kicked from channel - balance depleted");
+          setError("Call ended - insufficient balance");
+
+          // Stop ringtone if playing
+          if (ringtoneRef.current && isRingtonePlayingRef.current) {
+            ringtoneRef.current.pause();
+            ringtoneRef.current.currentTime = 0;
+            isRingtonePlayingRef.current = false;
+          }
+
+          // Cleanup and end
+          cleanup().then(() => {
+            endCall();
+          });
+        }
+
+        // Handle other disconnection reasons
+        if (curState === "DISCONNECTED" && reason !== "LEAVE") {
+          console.log("[ActiveCall] 🔌 Disconnected unexpectedly");
+          handleEndCall();
+        }
+      });
+
       const success = await client.init(
         {
           appId: AGORA_APP_ID,
           channel: callState.channelName!,
           token: callState.token!,
         },
-        callState.callType!
+        callState.callType!,
       );
 
-      if (!success) throw new Error('Failed to join Agora');
+      if (!success) throw new Error("Failed to join Agora");
 
-      if (callState.callType === 'video') {
+      if (callState.callType === "video") {
         setTimeout(() => {
-          client.playLocalVideo('local-video');
+          client.playLocalVideo("local-video");
         }, 500);
       }
     } catch (error: any) {

@@ -18,6 +18,7 @@ type WalletPopoverProps = {
 
 // Defined packs
 const coinPacks = [
+  { id: 9, coins: 1, originalPrice: 6, price: 5, discountLabel: "20% OFF", highlight: true },
   { id: 1, coins: 40, originalPrice: 60, price: 50, discountLabel: "20% OFF", highlight: true },
   { id: 3, coins: 160, originalPrice: 240, price: 200, discountLabel: "20% OFF", highlight: true },
   { id: 4, coins: 320, originalPrice: 480, price: 400, discountLabel: "20% OFF", highlight: true },

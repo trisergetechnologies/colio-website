@@ -106,6 +106,22 @@ export class AgoraClient {
     });
   }
 
+  // ✅ NEW: Handle connection state changes (including being kicked)
+  onConnectionStateChange(callback: (curState: string, prevState: string, reason?: string) => void) {
+    if (!this.client) return;
+    
+    this.client.on('connection-state-change', (curState, prevState, reason) => {
+      console.log('[Agora] 🔄 Connection state:', prevState, '->', curState, 'Reason:', reason);
+      
+      // Handle being kicked from channel (banned by server)
+      if (curState === 'DISCONNECTED' && reason === 'BANNED BY SERVER') {
+        console.log('[Agora] ⛔ Kicked from channel by server (balance depleted)');
+      }
+      
+      callback(curState, prevState, reason);
+    });
+  }
+
   playRemoteVideo(user: IAgoraRTCRemoteUser, elementId: string) {
     if (user.videoTrack && isClient) {
       console.log('[Agora] Playing remote video in:', elementId);
