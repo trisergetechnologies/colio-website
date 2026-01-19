@@ -113,10 +113,8 @@ export const Sociallinkdata: SocialType[] = [
 // ✅ Footer Navigation Links
 export const Footerlinkdata: FooterType[] = [
   { label: "Home", href: "/" },
-  { label: "How It Works", href: "/#howitworks-section" },
-  { label: "Features", href: "/#features-section" },
-  { label: "FAQ", href: "/#faq-section" },
   { label: "Contact Us", href: "/#contact" },
   { label: "Privacy Policy", href: "/privacy-policy" },
+  { label: "Refund Policy", href: "/refund-policy" },
   { label: "Terms & Conditions", href: "/terms-and-conditions" },
 ];
