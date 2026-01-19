@@ -1,23 +1,21 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import Image from "next/image";
+import { colors } from "@/constants/colors";
+import { useCall } from "@/context/CallContext";
+import { getToken } from "@/lib/utils/tokenHelper";
+import axios from "axios";
 import { motion } from "framer-motion";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   IoCallOutline,
   IoChatbubbleOutline,
-  IoVideocamOutline,
-  IoAdd,
-  IoStar,
-  IoStarOutline,
   IoHeart,
   IoHeartOutline,
+  IoShieldOutline,
+  IoVideocamOutline,
 } from "react-icons/io5";
-import { useRouter } from "next/navigation";
-import axios from "axios";
-import { colors } from "@/constants/colors";
-import { getToken } from "@/lib/utils/tokenHelper"; // adjust path if different
-import { useCall } from "@/context/CallContext";
 import BlockUserModal from "../../profileThings/BlockUserModal";
 
 /* ----------------------------- Types & Dummy Data ----------------------------- */
@@ -81,7 +79,6 @@ const ALL_PROFESSIONALS: Pro[] = [
       "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=400&h=400&fit=crop&crop=faces",
     online: false,
   },
-  // ... more dummies if needed
 ];
 
 /* ---------------------------- Motion Variants ---------------------------- */
@@ -107,7 +104,6 @@ export default function ExpertsList() {
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.colio.in/api";
   const [callingId, setCallingId] = useState<string | null>(null);
-  // API pagination defaults
   const PAGE_LIMIT = 12;
 
   const [consultants, setConsultants] = useState<Consultant[]>([]);
@@ -117,7 +113,6 @@ export default function ExpertsList() {
   const [tab, setTab] = useState<"recommended" | "following">("recommended");
   const [search, setSearch] = useState<string>("");
 
-  // Pagination state for API mode
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(false);
   const [usingDummy, setUsingDummy] = useState<boolean>(false);
@@ -138,7 +133,6 @@ export default function ExpertsList() {
     setBlockTarget(null);
   };
 
-  // Fetch consultants or favorites depending on tab and page
   const fetchData = useCallback(
     async (opts?: { page?: number; append?: boolean }) => {
       const p = opts?.page ?? 1;
@@ -146,7 +140,6 @@ export default function ExpertsList() {
       setIsLoading(true);
       try {
         const token = await getToken();
-        // If tab=following, fetch favorites (no pagination assumed unless backend supports)
         if (tab === "following") {
           const res = await axios.get(`${API_BASE_URL}/customer/favorites`, {
             headers: token ? { Authorization: `Bearer ${token}` } : undefined,
@@ -164,7 +157,7 @@ export default function ExpertsList() {
             })) as Consultant[];
             setConsultants(normalized);
             setFavorites(normalized.map((c) => c.id));
-            setHasMore(false); // following list typically not paginated here
+            setHasMore(false);
             setUsingDummy(false);
           } else {
             setConsultants([]);
@@ -173,8 +166,6 @@ export default function ExpertsList() {
             setUsingDummy(false);
           }
         } else {
-          // Recommended: try fetching paginated consultants
-          // backend might support ?page & ?limit — we send them
           const res = await axios.get(
             `${API_BASE_URL}/customer/consultants?page=${p}&limit=${PAGE_LIMIT}`,
             {
@@ -183,7 +174,6 @@ export default function ExpertsList() {
           );
 
           if (res.data?.success && (res.data.data?.consultants || res.data.data)) {
-            // support different shapes: res.data.data.consultants OR res.data.data as array
             const returned =
               Array.isArray(res.data.data?.consultants) ? res.data.data.consultants : Array.isArray(res.data.data) ? res.data.data : res.data.data?.consultants || [];
 
@@ -207,18 +197,15 @@ export default function ExpertsList() {
               setConsultants(normalized);
             }
 
-            // determine hasMore via common meta fields
             const meta = res.data.data?.meta || res.data.meta || null;
             const metaHasMore =
               meta?.hasNextPage ?? meta?.hasMore ?? (meta?.total && meta?.page && meta?.limit ? meta.page * meta.limit < meta.total : undefined);
 
-            // fallback: if meta not present, infer from returned length vs limit
             const inferredHasMore = Array.isArray(returned) ? returned.length === PAGE_LIMIT : false;
 
             setHasMore(Boolean(metaHasMore ?? inferredHasMore));
             setUsingDummy(false);
           } else {
-            // If API returned empty or unexpected, fallback to local dummy list
             setConsultants(ALL_PROFESSIONALS.map((p) => ({
               id: p.id,
               name: p.name,
@@ -233,7 +220,6 @@ export default function ExpertsList() {
         }
       } catch (err) {
         console.error("ProfessionalsList fetch error:", err);
-        // fallback to dummy list on error
         setConsultants(ALL_PROFESSIONALS.map((p) => ({
           id: p.id,
           name: p.name,
@@ -251,17 +237,14 @@ export default function ExpertsList() {
     [API_BASE_URL, PAGE_LIMIT, tab]
   );
 
-  // initial fetch & refetch on tab change
   useEffect(() => {
     setPage(1);
     fetchData({ page: 1, append: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
-  // Load more handler (works for API pagination or dummy)
   const handleLoadMore = async () => {
     if (usingDummy) {
-      // client-side reveal more from ALL_PROFESSIONALS
       const current = consultants.length;
       const nextVisible = Math.min(current + PAGE_LIMIT, ALL_PROFESSIONALS.length);
       setConsultants(ALL_PROFESSIONALS.slice(0, nextVisible).map((p) => ({
@@ -282,13 +265,11 @@ export default function ExpertsList() {
     await fetchData({ page: nextPage, append: true });
   };
 
-  // Toggle follow/unfollow with optimistic UI + rollback on failure
   const toggleFollow = async (id: string) => {
     try {
       const token = getToken();
       const isFav = favorites.includes(id);
 
-      // optimistic update
       if (isFav) setFavorites((p) => p.filter((x) => x !== id));
       else setFavorites((p) => [...p, id]);
 
@@ -303,14 +284,11 @@ export default function ExpertsList() {
           { headers: token ? { Authorization: `Bearer ${token}` } : undefined }
         );
       }
-      // success — nothing else to do (state already updated)
     } catch (err) {
       console.error("toggleFollow error:", err);
-      // rollback optimistic change
       setFavorites((p) => {
         const had = p.includes(id);
-        if (had) return p.filter((x) => x !== id); // if we ended up having it, remove it
-        // if we removed earlier and failed, re-add
+        if (had) return p.filter((x) => x !== id);
         return [...p, id];
       });
     }
@@ -318,9 +296,7 @@ export default function ExpertsList() {
 
   const { initiateCall } = useCall();
 
-  // Start call handlers (for web we route to call pages — replace with real call flow)
   const handleVoiceCall = (consultant: any) => {
-    // ✅ Prevent double clicks
     if (callingId) {
       console.log('[ExpertsList] Already initiating a call');
       return;
@@ -335,14 +311,12 @@ export default function ExpertsList() {
       consultant.avatar
     );
 
-    // ✅ Reset after 3 seconds
     setTimeout(() => {
       setCallingId(null);
     }, 3000);
   };
 
   const handleVideoCall = (consultant: any) => {
-    // ✅ Prevent double clicks
     if (callingId) {
       console.log('[ExpertsList] Already initiating a call');
       return;
@@ -357,7 +331,6 @@ export default function ExpertsList() {
       consultant.avatar
     );
 
-    // ✅ Reset after 3 seconds
     setTimeout(() => {
       setCallingId(null);
     }, 3000);
@@ -373,7 +346,6 @@ export default function ExpertsList() {
     router.push(`/chat/new?${params.toString()}`);
   };
 
-  // Search filtering
   const displayedData = useMemo(() => {
     if (tab === "following") return consultants;
     if (!search.trim()) return consultants;
@@ -385,7 +357,6 @@ export default function ExpertsList() {
     );
   }, [tab, consultants, search]);
 
-  // UI
   return (
     <section
       id="professionals-list"
@@ -394,49 +365,56 @@ export default function ExpertsList() {
         background: `linear-gradient(180deg, #0f0f11 0%, ${colors.background.end} 100%)`,
       }}
     >
-      {/* floating layers */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 left-[15%] w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(217,70,239,0.18),transparent_70%)] blur-3xl animate-float" />
-        <div className="absolute bottom-0 right-[10%] w-[520px] h-[520px] bg-[radial-gradient(circle,rgba(255,255,255,0.08),transparent_70%)] blur-3xl animate-pulse-slow" />
+      {/* Ambient background effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-[15%] w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(217,70,239,0.12),transparent_70%)] blur-3xl animate-float" />
+        <div className="absolute bottom-0 right-[10%] w-[520px] h-[520px] bg-[radial-gradient(circle,rgba(255,255,255,0.05),transparent_70%)] blur-3xl animate-pulse-slow" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-[radial-gradient(circle,rgba(236,72,153,0.06),transparent_60%)] blur-3xl" />
       </div>
 
       <div className="container relative z-20">
-        {/* header + controls */}
-        <div className="mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        {/* Header + controls */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
               Experts
             </h2>
-            <p className="text-white/70 mt-2">
+            <p className="text-white/60 mt-2 text-base">
               Connect with expert consultants — voice, video or chat.
             </p>
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="flex-1 md:flex-initial">
-              <div className="relative">
+            <div className="flex-1 md:flex-initial md:min-w-[280px]">
+              <div className="relative group">
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search experts or languages..."
-                  className="w-full rounded-full px-4 py-3 bg-white/6 placeholder:text-white/60 text-white outline-none"
-                  style={{ border: "1px solid rgba(255,255,255,0.06)" }}
+                  className="w-full rounded-2xl px-5 py-3.5 bg-white/[0.04] placeholder:text-white/40 text-white text-sm outline-none border border-white/[0.06] focus:border-pink-500/40 focus:bg-white/[0.06] transition-all duration-300"
                 />
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-pink-500/20 to-purple-500/20 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 -z-10 blur-xl" />
               </div>
             </div>
 
-            <div className="flex rounded-full overflow-hidden border border-white/6">
+            <div className="flex rounded-2xl overflow-hidden border border-white/[0.08] bg-white/[0.02]">
               <button
                 onClick={() => setTab("recommended")}
-                className={`px-4 py-2 text-sm font-semibold ${tab === "recommended" ? "bg-pink-600" : "bg-white/10"} text-white`}
-                style={{ transition: "all .18s" }}
+                className={`px-5 py-3 text-sm font-medium transition-all duration-300 ${
+                  tab === "recommended"
+                    ? "bg-gradient-to-r from-pink-600 to-pink-500 text-white"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
               >
                 Recommended
               </button>
               <button
                 onClick={() => setTab("following")}
-                className={`px-4 py-2 text-sm font-semibold ${tab === "following" ? "bg-pink-600" : "bg-white/10"} text-white`}
-                style={{ transition: "all .18s" }}
+                className={`px-5 py-3 text-sm font-medium transition-all duration-300 ${
+                  tab === "following"
+                    ? "bg-gradient-to-r from-pink-600 to-pink-500 text-white"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
               >
                 Following
               </button>
@@ -444,72 +422,61 @@ export default function ExpertsList() {
           </div>
         </div>
 
-        {/* grid */}
+        {/* Grid */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 md:gap-6"
           variants={containerStagger}
           initial="hidden"
           animate="show"
         >
-          {/* Loading & fallback */}
+          {/* Loading skeletons */}
           {isLoading && (
             <>
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={`skeleton-${i}`}
-                  className="rounded-3xl border border-white/10 bg-[rgba(15,15,17,0.6)] p-6 animate-pulse h-44"
-                />
+                  className="rounded-3xl border border-white/[0.06] bg-white/[0.02] p-6 h-[280px] animate-pulse"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-20 h-20 rounded-2xl bg-white/[0.06]" />
+                    <div className="flex-1 space-y-3">
+                      <div className="h-5 bg-white/[0.06] rounded-lg w-3/4" />
+                      <div className="h-4 bg-white/[0.06] rounded-lg w-1/2" />
+                    </div>
+                  </div>
+                </div>
               ))}
             </>
           )}
 
-          {!isLoading &&
-            displayedData.length === 0 &&
-            tab === "recommended" && (
-              <div className="text-white/70 col-span-full p-8">
-                No experts found.
-              </div>
-            )}
+          {!isLoading && displayedData.length === 0 && tab === "recommended" && (
+            <div className="text-white/60 col-span-full p-12 text-center">
+              No experts found.
+            </div>
+          )}
 
-          {/* Improved empty state for Following tab */}
+          {/* Empty state for Following */}
           {!isLoading && displayedData.length === 0 && tab === "following" && (
-            <div className="col-span-full flex flex-col items-center justify-center p-10 bg-[rgba(255,255,255,0.02)] rounded-2xl">
-              <svg
-                width="120"
-                height="120"
-                viewBox="0 0 24 24"
-                fill="none"
-                className="mb-6"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12 21s-6-4.35-8-6c-1.1-0.89-1-3 .5-4.5C6 9 8 9 9 9s1.5-2.5 3-2.5S15 9 15 9s2 0 4.5 1.5c1.5 1.5 1.6 3.6.5 4.5-2 1.65-8 6-8 6z"
-                  fill="#fff"
-                  opacity="0.06"
-                />
-                <path d="M12 12a3 3 0 100-6 3 3 0 000 6z" fill="#ff66cc" />
-              </svg>
-
-              <h3 className="text-white text-lg font-semibold mb-2">
+            <div className="col-span-full flex flex-col items-center justify-center p-14 bg-white/[0.02] rounded-3xl border border-white/[0.06]">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pink-500/20 to-purple-500/20 flex items-center justify-center mb-6">
+                <IoHeart className="w-10 h-10 text-pink-400/60" />
+              </div>
+              <h3 className="text-white text-xl font-semibold mb-2">
                 You haven't followed anyone yet
               </h3>
-              <p className="text-white/70 mb-4 text-center">
-                Follow experts to see them listed here. We’ll recommend top
-                profiles you may like.
+              <p className="text-white/50 mb-6 text-center max-w-md">
+                Follow experts to see them listed here. We'll recommend top profiles you may like.
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setTab("recommended")}
-                  className="px-4 py-2 rounded-full bg-[rgba(255,255,255,0.06)] text-white border border-white/10"
+                  className="px-5 py-2.5 rounded-xl bg-white/[0.06] text-white border border-white/[0.08] hover:bg-white/[0.1] transition-all duration-200"
                 >
                   Browse Recommended
                 </button>
                 <button
-                  onClick={() => {
-                    // Could open search or suggestions
-                    setTab("recommended");
-                  }}
-                  className="px-4 py-2 rounded-full bg-pink-600 text-white"
+                  onClick={() => setTab("recommended")}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-pink-500 text-white font-medium hover:shadow-lg hover:shadow-pink-500/25 transition-all duration-200"
                 >
                   Discover Experts
                 </button>
@@ -517,137 +484,239 @@ export default function ExpertsList() {
             </div>
           )}
 
+          {/* Expert Cards */}
           {!isLoading &&
             displayedData.map((c) => {
               const id = c.id || (c as any)._id || "";
               const isFav = favorites.includes(id);
-              const rating = (c.ratingAverage ??
-                (c as any).rating ??
-                0) as number;
+              const rating = (c.ratingAverage ?? (c as any).rating ?? 0) as number;
+              const isOnline = c.availabilityStatus === "onWork" || (c as any).online;
+              const isBusy = c.availabilityStatus === "busy";
 
               return (
                 <motion.div
                   key={id}
                   variants={cardVariants}
-                  whileHover={{
-                    y: -6,
-                    boxShadow: "0 24px 48px -18px rgba(217,70,239,0.18)",
-                  }}
-                  className="relative flex items-start gap-6 rounded-3xl border border-white/10 bg-[rgba(15,15,17,0.75)] backdrop-blur-xl p-6 md:p-7 transition-all duration-300 hover:border-[#e879f9]/50"
+                  whileHover={{ y: -4 }}
+                  className="group relative rounded-3xl border border-white/[0.08] bg-[#0d0d0f]/80 backdrop-blur-xl overflow-hidden transition-all duration-500 hover:border-pink-500/30 hover:shadow-2xl hover:shadow-pink-500/[0.08]"
                 >
-                  <button
-                    aria-label={isFav ? "Unfollow" : "Follow"}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFollow(id);
-                    }}
-                    className="absolute -top-3 -right-3 rounded-full p-3 shadow-lg border border-white/10 bg-white/10 hover:bg-white/20 transition transform hover:scale-105 flex items-center justify-center"
-                    title={isFav ? "Unfollow" : "Follow"}
-                  >
-                    {isFav ? (
-                      <IoHeart
-                        style={{ color: "#ff2e8b", width: 18, height: 18 }}
-                      />
-                    ) : (
-                      <IoHeartOutline
-                        style={{ color: "white", width: 18, height: 18 }}
-                      />
-                    )}
-                  </button>
-                  <button
-                    aria-label="block-report"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openBlockModal(c);
-                    }}
-                    title="Report"
-                    className="absolute -bottom-1 -left-3 rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-wide
-                               bg-red-500/15 text-red-400 border border-red-500/30 backdrop-blur-md shadow-lg hover:bg-red-500/25 hover:border-red-400/60 hover:text-red-300
-                                transition-all duration-200 hover:scale-105"
-                  >
-                    Report
-                  </button>
+                  {/* Card inner glow on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-pink-500/[0.03] via-transparent to-purple-500/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                  {/* Avatar */}
-                  <div className="relative shrink-0 w-24 h-24">
-                    <Image
-                      src={
-                        c.avatar ||
-                        "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                      }
-                      alt={c.name}
-                      fill
-                      sizes="96px"
-                      className="rounded-full object-cover border border-white/10"
-                    />
-
-                    {/* online indicator */}
-                    {(c.availabilityStatus === "onWork" ||
-                      (c as any).online) && (
-                      <div className="absolute -bottom-1 -right-1">
-                        <span className="block w-5 h-5 rounded-full bg-[rgba(34,197,94,1)] border-2 border-black/40" />
+                  {/* Top section with avatar and info */}
+                  <div className="relative p-5 pb-4">
+                    {/* Top row: Avatar + Name + Status + Actions */}
+                    <div className="flex items-start gap-4">
+                      {/* Avatar with status */}
+                      <div className="relative shrink-0">
+                        <div className="relative w-[72px] h-[72px] rounded-2xl overflow-hidden ring-2 ring-white/[0.08] group-hover:ring-pink-500/30 transition-all duration-300">
+                          <Image
+                            src={
+                              c.avatar ||
+                              "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                            }
+                            alt={c.name}
+                            fill
+                            sizes="72px"
+                            className="object-cover"
+                          />
+                        </div>
+                        {/* Online/Busy indicator */}
+                        <div
+                          className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-[3px] border-[#0d0d0f] ${
+                            isOnline
+                              ? "bg-emerald-500 shadow-lg shadow-emerald-500/50"
+                              : isBusy
+                                ? "bg-amber-500 shadow-lg shadow-amber-500/50"
+                                : "bg-zinc-600"
+                          }`}
+                        />
                       </div>
-                    )}
+
+                      {/* Name and languages */}
+                      <div className="flex-1 min-w-0 pt-1">
+                        <h3 className="text-white text-lg font-semibold truncate leading-tight">
+                          {c.name}
+                        </h3>
+                        <p className="text-white/50 text-sm mt-1 truncate">
+                          {c.languages?.join(" • ") || "English"}
+                        </p>
+
+                        {/* Status badge */}
+                        <div className="mt-2">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                              isOnline
+                                ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
+                                : isBusy
+                                  ? "bg-amber-500/15 text-amber-400 border border-amber-500/20"
+                                  : "bg-white/[0.06] text-white/50 border border-white/[0.08]"
+                            }`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                isOnline
+                                  ? "bg-emerald-400"
+                                  : isBusy
+                                    ? "bg-amber-400"
+                                    : "bg-white/40"
+                              }`}
+                            />
+                            {isOnline
+                              ? "Available"
+                              : isBusy
+                                ? "Busy"
+                                : "Offline"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Top right actions: Favorite & Report */}
+                      <div className="flex flex-col gap-2">
+                        <button
+                          aria-label={isFav ? "Unfollow" : "Follow"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFollow(id);
+                          }}
+                          className={`p-2 rounded-xl transition-all duration-200 ${
+                            isFav
+                              ? "bg-pink-500/20 text-pink-400 hover:bg-pink-500/30"
+                              : "bg-white/[0.04] text-white/40 hover:bg-white/[0.08] hover:text-white/70"
+                          }`}
+                          title={isFav ? "Unfollow" : "Follow"}
+                        >
+                          {isFav ? (
+                            <IoHeart className="w-5 h-5" />
+                          ) : (
+                            <IoHeartOutline className="w-5 h-5" />
+                          )}
+                        </button>
+
+                        <button
+                          aria-label="Report"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openBlockModal(c);
+                          }}
+                          className="p-2 rounded-xl bg-white/[0.04] text-white/40 hover:bg-red-500/15 hover:text-red-400 transition-all duration-200"
+                          title="Report"
+                        >
+                          <IoShieldOutline className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-white text-xl font-semibold truncate">
-                      {c.name}
-                    </h3>
-                    <p className="text-white/70 text-sm mt-1">
-                      {c.languages?.join(", ") || "English"}
-                    </p>
+                  {/* Pricing section */}
+                  <div className="relative px-5 pb-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* Voice rate */}
+                      <div className="bg-white/[0.03] rounded-xl px-3.5 py-3 border border-white/[0.04]">
+                        <div className="flex items-center gap-2 mb-1">
+                          <IoCallOutline className="w-4 h-4 text-emerald-400" />
+                          <span className="text-white/50 text-xs">Voice</span>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-white font-bold text-lg">
+                            ₹{c.ratePerMinute || "—"}
+                          </span>
+                          <span className="text-white/40 text-xs">/min</span>
+                        </div>
+                      </div>
 
-                    <div className="mt-2 text-green-200 text-sm flex items-center gap-2">
-                      {"Voice call ?? "}
-                      <div className="text-pink-400 text-sm">
-                        {"just "}
-                        <b>{c.ratePerMinute}</b>
-                        {"/min"}
+                      {/* Video rate */}
+                      <div className="bg-white/[0.03] rounded-xl px-3.5 py-3 border border-white/[0.04]">
+                        <div className="flex items-center gap-2 mb-1">
+                          <IoVideocamOutline className="w-4 h-4 text-pink-400" />
+                          <span className="text-white/50 text-xs">Video</span>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-white font-bold text-lg">
+                            ₹{c.ratePerMinuteVideo || "—"}
+                          </span>
+                          <span className="text-white/40 text-xs">/min</span>
+                        </div>
                       </div>
                     </div>
-                    <div className="mt-2 text-green-200 text-sm flex items-center gap-2">
-                      {"Video call ??"}
-                      <div className="text-pink-400 text-sm">
-                         {"just "}<b>{c.ratePerMinuteVideo}</b>
-                        {"/min"}
-                      </div>
-                    </div>
+                  </div>
 
-                    {/* Actions */}
-                    <div className="mt-4 flex items-center gap-3">
+                  {/* Action buttons - SUPER FANCY VERSION */}
+                  <div className="relative px-5 pb-5">
+                    <div className="flex items-center gap-2">
+                      {/* Voice Call Button - Emerald Gradient with Glow */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleVoiceCall(c);
                         }}
-                        className="p-3 rounded-full border border-white/10 bg-black hover:bg-white/20 transition"
+                        className="group/btn relative flex-1 max-w-[140px] flex items-center justify-center gap-2 py-3 px-3 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
                         title="Voice Call"
                       >
-                        <IoCallOutline className="w-5 h-5 text-green-400" />
+                        {/* Animated pulsing glow */}
+                        <div className="absolute -inset-2 bg-emerald-500/60 blur-2xl animate-[pulse_2s_ease-in-out_infinite]" />
+                        <div className="absolute -inset-1 bg-emerald-400/40 blur-xl animate-[pulse_2s_ease-in-out_infinite_0.5s]" />
+                        {/* Base gradient */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 rounded-xl" />
+                        {/* Shimmer overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] animate-[shimmer_2.5s_ease-in-out_infinite] rounded-xl" />
+                        {/* Top shine */}
+                        <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-t-xl" />
+                        {/* Content */}
+                        <div className="relative flex items-center gap-2">
+                          <IoCallOutline className="w-4 h-4 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+                          <span className="text-white font-bold text-sm drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+                            Voice
+                          </span>
+                        </div>
                       </button>
 
+                      {/* Chat Button - Premium Glass Style */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           startChat(c);
                         }}
-                        className="p-3 rounded-full border border-white/10 bg-black hover:bg-white/20 transition"
+                        className="group/btn relative flex items-center justify-center p-3 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.08] active:scale-[0.95]"
                         title="Chat"
                       >
-                        <IoChatbubbleOutline className="w-5 h-5 text-green-400" />
+                        {/* Subtle pulsing glow */}
+                        <div className="absolute -inset-1 bg-white/30 blur-lg animate-[pulse_3s_ease-in-out_infinite]" />
+                        {/* Glass background */}
+                        <div className="absolute inset-0 bg-white/[0.1] backdrop-blur-md rounded-xl" />
+                        {/* Border */}
+                        <div className="absolute inset-0 rounded-xl border border-white/20 group-hover/btn:border-white/40 transition-colors duration-300" />
+                        {/* Top shine */}
+                        <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent rounded-t-xl" />
+                        {/* Icon */}
+                        <IoChatbubbleOutline className="relative w-5 h-5 text-white/80 group-hover/btn:text-white transition-colors duration-200 drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]" />
                       </button>
 
+                      {/* Video Call Button - Pink Gradient with Glow */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleVideoCall(c);
                         }}
-                        className="p-3 rounded-full border border-white/10 bg-black hover:bg-white/20 transition"
+                        className="group/btn relative flex-1 max-w-[140px] flex items-center justify-center gap-2 py-3 px-3 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
                         title="Video Call"
                       >
-                        <IoVideocamOutline className="w-5 h-5 text-green-400" />
+                        {/* Animated pulsing glow */}
+                        <div className="absolute -inset-2 bg-pink-500/60 blur-2xl animate-[pulse_2s_ease-in-out_infinite]" />
+                        <div className="absolute -inset-1 bg-pink-400/40 blur-xl animate-[pulse_2s_ease-in-out_infinite_0.5s]" />
+                        {/* Base gradient */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-pink-600 via-pink-500 to-rose-500 rounded-xl" />
+                        {/* Shimmer overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] animate-[shimmer_2.5s_ease-in-out_infinite] rounded-xl" />
+                        {/* Top shine */}
+                        <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-t-xl" />
+                        {/* Content */}
+                        <div className="relative flex items-center gap-2">
+                          <IoVideocamOutline className="w-4 h-4 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+                          <span className="text-white font-bold text-sm drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+                            Video
+                          </span>
+                        </div>
                       </button>
                     </div>
                   </div>
@@ -656,19 +725,23 @@ export default function ExpertsList() {
             })}
         </motion.div>
 
-        {/* Load more: show only when there is more data */}
+        {/* Load more button */}
         {hasMore && (
-          <div className="mt-12 flex justify-center">
+          <div className="mt-14 flex justify-center">
             <button
               onClick={handleLoadMore}
               disabled={isLoading}
-              className="px-6 py-3 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white backdrop-blur-lg transition-all duration-300"
+              className="group relative px-8 py-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-white font-medium hover:bg-white/[0.08] hover:border-white/[0.12] transition-all duration-300 disabled:opacity-50"
             >
-              {isLoading ? "Refreshing…" : "Refresh"}
+              <span className="relative z-10">
+                {isLoading ? "Loading..." : "Load More Experts"}
+              </span>
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-pink-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </button>
           </div>
         )}
       </div>
+
       <BlockUserModal
         open={!!blockTarget}
         onClose={closeBlockModal}
