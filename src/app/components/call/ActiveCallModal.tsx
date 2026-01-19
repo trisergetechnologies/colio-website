@@ -697,7 +697,7 @@ useEffect(() => {
 
         {/* CHAT PANEL - FIXED SIDE BY SIDE */}
         {showChat && (
-          <div className="absolute bottom-[220px] left-5 right-5 max-w-[400px] max-h-[400px] bg-white/10 rounded-3xl overflow-hidden z-20 flex flex-col backdrop-blur-xl border border-white/20 shadow-2xl">
+          <div className="absolute bottom-[220px] left-5 right-5 max-w-[300px] max-h-[300px] bg-white/10 rounded-3xl overflow-hidden z-20 flex flex-col backdrop-blur-xl border border-white/20 shadow-2xl">
             <div className="flex justify-between items-center px-5 py-4 border-b border-white/10 bg-white/5">
               <span className="text-white text-lg font-bold tracking-wide">Messages</span>
               <button 

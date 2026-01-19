@@ -21,8 +21,9 @@ export default function BestMatchModalClient() {
         }, 1000); // 1 second delay after WelcomeModal closes
       }
     };
+    handleDownloadAppClose();
     
-    window.addEventListener("download-app-closed", handleDownloadAppClose);
+    // window.addEventListener("download-app-closed", handleDownloadAppClose);
     
     // Also listen for manual trigger (for the "Best Match For You" button)
     const openModal = () => {

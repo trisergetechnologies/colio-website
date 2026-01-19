@@ -18,6 +18,7 @@ import axios from "axios";
 import { colors } from "@/constants/colors";
 import { getToken } from "@/lib/utils/tokenHelper"; // adjust path if different
 import { useCall } from "@/context/CallContext";
+import BlockUserModal from "../../profileThings/BlockUserModal";
 
 /* ----------------------------- Types & Dummy Data ----------------------------- */
 
@@ -28,6 +29,7 @@ type Consultant = {
   bio?: string | null;
   languages?: string[];
   ratePerMinute?: number | null;
+  ratePerMinuteVideo?: number | null;
   ratingAverage?: number | null;
   totalSessions?: number | null;
   availabilityStatus?: "onWork" | "offWork" | "busy";
@@ -120,6 +122,22 @@ export default function ExpertsList() {
   const [hasMore, setHasMore] = useState<boolean>(false);
   const [usingDummy, setUsingDummy] = useState<boolean>(false);
 
+  const [blockTarget, setBlockTarget] = useState<{
+    id: string;
+    name?: string;
+  } | null>(null);
+
+  const openBlockModal = (consultant: Consultant) => {
+    setBlockTarget({
+      id: consultant.id,
+      name: consultant.name,
+    });
+  };
+
+  const closeBlockModal = () => {
+    setBlockTarget(null);
+  };
+
   // Fetch consultants or favorites depending on tab and page
   const fetchData = useCallback(
     async (opts?: { page?: number; append?: boolean }) => {
@@ -127,7 +145,7 @@ export default function ExpertsList() {
       const append = !!opts?.append;
       setIsLoading(true);
       try {
-        const token = getToken();
+        const token = await getToken();
         // If tab=following, fetch favorites (no pagination assumed unless backend supports)
         if (tab === "following") {
           const res = await axios.get(`${API_BASE_URL}/customer/favorites`, {
@@ -177,6 +195,7 @@ export default function ExpertsList() {
               ratingAverage: typeof c.ratingAverage === "number" ? c.ratingAverage : c.rating,
               availabilityStatus: c.availabilityStatus || "offWork",
               ratePerMinute: c.ratePerMinute || null,
+              ratePerMinuteVideo: c.ratePerMinuteVideo || null,
               totalSessions: c.totalSessions || null,
               bio: c.bio || null,
               experienceMonths: c.experienceMonths || null,
@@ -385,8 +404,12 @@ export default function ExpertsList() {
         {/* header + controls */}
         <div className="mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white">Experts</h2>
-            <p className="text-white/70 mt-2">Connect with expert consultants — voice, video or chat.</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-white">
+              Experts
+            </h2>
+            <p className="text-white/70 mt-2">
+              Connect with expert consultants — voice, video or chat.
+            </p>
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto">
@@ -432,25 +455,48 @@ export default function ExpertsList() {
           {isLoading && (
             <>
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={`skeleton-${i}`} className="rounded-3xl border border-white/10 bg-[rgba(15,15,17,0.6)] p-6 animate-pulse h-44" />
+                <div
+                  key={`skeleton-${i}`}
+                  className="rounded-3xl border border-white/10 bg-[rgba(15,15,17,0.6)] p-6 animate-pulse h-44"
+                />
               ))}
             </>
           )}
 
-          {!isLoading && displayedData.length === 0 && tab === "recommended" && (
-            <div className="text-white/70 col-span-full p-8">No experts found.</div>
-          )}
+          {!isLoading &&
+            displayedData.length === 0 &&
+            tab === "recommended" && (
+              <div className="text-white/70 col-span-full p-8">
+                No experts found.
+              </div>
+            )}
 
           {/* Improved empty state for Following tab */}
           {!isLoading && displayedData.length === 0 && tab === "following" && (
             <div className="col-span-full flex flex-col items-center justify-center p-10 bg-[rgba(255,255,255,0.02)] rounded-2xl">
-              <svg width="120" height="120" viewBox="0 0 24 24" fill="none" className="mb-6" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 21s-6-4.35-8-6c-1.1-0.89-1-3 .5-4.5C6 9 8 9 9 9s1.5-2.5 3-2.5S15 9 15 9s2 0 4.5 1.5c1.5 1.5 1.6 3.6.5 4.5-2 1.65-8 6-8 6z" fill="#fff" opacity="0.06"/>
+              <svg
+                width="120"
+                height="120"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="mb-6"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 21s-6-4.35-8-6c-1.1-0.89-1-3 .5-4.5C6 9 8 9 9 9s1.5-2.5 3-2.5S15 9 15 9s2 0 4.5 1.5c1.5 1.5 1.6 3.6.5 4.5-2 1.65-8 6-8 6z"
+                  fill="#fff"
+                  opacity="0.06"
+                />
                 <path d="M12 12a3 3 0 100-6 3 3 0 000 6z" fill="#ff66cc" />
               </svg>
 
-              <h3 className="text-white text-lg font-semibold mb-2">You haven't followed anyone yet</h3>
-              <p className="text-white/70 mb-4 text-center">Follow experts to see them listed here. We’ll recommend top profiles you may like.</p>
+              <h3 className="text-white text-lg font-semibold mb-2">
+                You haven't followed anyone yet
+              </h3>
+              <p className="text-white/70 mb-4 text-center">
+                Follow experts to see them listed here. We’ll recommend top
+                profiles you may like.
+              </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setTab("recommended")}
@@ -475,28 +521,60 @@ export default function ExpertsList() {
             displayedData.map((c) => {
               const id = c.id || (c as any)._id || "";
               const isFav = favorites.includes(id);
-              const rating = (c.ratingAverage ?? (c as any).rating ?? 0) as number;
+              const rating = (c.ratingAverage ??
+                (c as any).rating ??
+                0) as number;
 
               return (
                 <motion.div
                   key={id}
                   variants={cardVariants}
-                  whileHover={{ y: -6, boxShadow: "0 24px 48px -18px rgba(217,70,239,0.18)" }}
+                  whileHover={{
+                    y: -6,
+                    boxShadow: "0 24px 48px -18px rgba(217,70,239,0.18)",
+                  }}
                   className="relative flex items-start gap-6 rounded-3xl border border-white/10 bg-[rgba(15,15,17,0.75)] backdrop-blur-xl p-6 md:p-7 transition-all duration-300 hover:border-[#e879f9]/50"
                 >
                   <button
                     aria-label={isFav ? "Unfollow" : "Follow"}
-                    onClick={(e) => { e.stopPropagation(); toggleFollow(id); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFollow(id);
+                    }}
                     className="absolute -top-3 -right-3 rounded-full p-3 shadow-lg border border-white/10 bg-white/10 hover:bg-white/20 transition transform hover:scale-105 flex items-center justify-center"
                     title={isFav ? "Unfollow" : "Follow"}
                   >
-                    {isFav ? <IoHeart style={{ color: "#ff2e8b", width: 18, height: 18 }} /> : <IoHeartOutline style={{ color: "white", width: 18, height: 18 }} />}
+                    {isFav ? (
+                      <IoHeart
+                        style={{ color: "#ff2e8b", width: 18, height: 18 }}
+                      />
+                    ) : (
+                      <IoHeartOutline
+                        style={{ color: "white", width: 18, height: 18 }}
+                      />
+                    )}
+                  </button>
+                  <button
+                    aria-label="block-report"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openBlockModal(c);
+                    }}
+                    title="Report"
+                    className="absolute -bottom-1 -left-3 rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-wide
+                               bg-red-500/15 text-red-400 border border-red-500/30 backdrop-blur-md shadow-lg hover:bg-red-500/25 hover:border-red-400/60 hover:text-red-300
+                                transition-all duration-200 hover:scale-105"
+                  >
+                    Report
                   </button>
 
                   {/* Avatar */}
                   <div className="relative shrink-0 w-24 h-24">
                     <Image
-                      src={c.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                      src={
+                        c.avatar ||
+                        "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                      }
                       alt={c.name}
                       fill
                       sizes="96px"
@@ -504,7 +582,8 @@ export default function ExpertsList() {
                     />
 
                     {/* online indicator */}
-                    {(c.availabilityStatus === "onWork" || (c as any).online) && (
+                    {(c.availabilityStatus === "onWork" ||
+                      (c as any).online) && (
                       <div className="absolute -bottom-1 -right-1">
                         <span className="block w-5 h-5 rounded-full bg-[rgba(34,197,94,1)] border-2 border-black/40" />
                       </div>
@@ -513,20 +592,36 @@ export default function ExpertsList() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-white text-xl font-semibold truncate">{c.name}</h3>
+                    <h3 className="text-white text-xl font-semibold truncate">
+                      {c.name}
+                    </h3>
                     <p className="text-white/70 text-sm mt-1">
                       {c.languages?.join(", ") || "English"}
                     </p>
 
-                    <div className="mt-2 flex items-center gap-2">
-                      <div className="text-yellow-400 text-sm">⭐ {Number(rating).toFixed(1)}</div>
-                      <div className="text-white/60 text-xs">• {c.experienceMonths ? `${Math.floor(c.experienceMonths/12)} yrs` : ""}</div>
+                    <div className="mt-2 text-green-200 text-sm flex items-center gap-2">
+                      {"Voice call ?? "}
+                      <div className="text-pink-400 text-sm">
+                        {"just "}
+                        <b>{c.ratePerMinute}</b>
+                        {"/min"}
+                      </div>
+                    </div>
+                    <div className="mt-2 text-green-200 text-sm flex items-center gap-2">
+                      {"Video call ??"}
+                      <div className="text-pink-400 text-sm">
+                         {"just "}<b>{c.ratePerMinuteVideo}</b>
+                        {"/min"}
+                      </div>
                     </div>
 
                     {/* Actions */}
                     <div className="mt-4 flex items-center gap-3">
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleVoiceCall(c) }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleVoiceCall(c);
+                        }}
                         className="p-3 rounded-full border border-white/10 bg-black hover:bg-white/20 transition"
                         title="Voice Call"
                       >
@@ -534,7 +629,10 @@ export default function ExpertsList() {
                       </button>
 
                       <button
-                        onClick={(e) => { e.stopPropagation(); startChat(c); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startChat(c);
+                        }}
                         className="p-3 rounded-full border border-white/10 bg-black hover:bg-white/20 transition"
                         title="Chat"
                       >
@@ -542,7 +640,10 @@ export default function ExpertsList() {
                       </button>
 
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleVideoCall(c); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleVideoCall(c);
+                        }}
                         className="p-3 rounded-full border border-white/10 bg-black hover:bg-white/20 transition"
                         title="Video Call"
                       >
@@ -568,6 +669,12 @@ export default function ExpertsList() {
           </div>
         )}
       </div>
+      <BlockUserModal
+        open={!!blockTarget}
+        onClose={closeBlockModal}
+        userIdToBlock={blockTarget?.id || ""}
+        userName={blockTarget?.name}
+      />
     </section>
   );
 }

@@ -1,18 +1,19 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
-import { useAuth } from "@/context/AuthContext";
+import { dancingScript } from "@/app/layout";
 import { colors } from "@/constants/colors";
+import { useAuth } from "@/context/AuthContext";
+import { getToken } from "@/lib/utils/tokenHelper";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import {
+  IoArrowBack,
+  IoCheckmark,
   IoLogOutOutline,
   IoPencil,
-  IoCheckmark,
-  IoArrowBack,
 } from "react-icons/io5";
 import Spinner from "../components/Spinner";
-import { useRouter } from "next/navigation";
-import { dancingScript } from "@/app/layout";
 
 export default function ProfilePageClient() {
   const { user, isAuthLoading, isAuthenticated, logout } = useAuth();
@@ -63,6 +64,8 @@ export default function ProfilePageClient() {
         <ProfileHero user={user} />
         <BasicInfoPanel user={user} />
         <WalletSection user={user} />
+        <BlockedUsersSection />
+        <RechargeHistorySection />
         <ActionZone logout={logout} />
       </div>
     </section>
@@ -241,16 +244,11 @@ function WalletSection({ user }: any) {
         Wallet
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className=" gap-6">
         <WalletMetric
-          title="Main Balance"
+          title="Tokens"
           amount={user?.wallet?.main || 0}
           accent="from-[#22c55e] to-[#16a34a]"
-        />
-        <WalletMetric
-          title="Bonus Balance"
-          amount={user?.wallet?.bonus || 0}
-          accent="from-[#f59e0b] to-[#d97706]"
         />
       </div>
     </div>
@@ -293,6 +291,174 @@ function ActionZone({ logout }: { logout: () => void }) {
           Logout
         </button>
       </div>
+    </div>
+  );
+}
+
+function BlockedUsersSection() {
+  const API = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.colio.in/api";
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const token = getToken();
+        const res = await fetch(`${API}/user/blocked-users`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (json.success) setUsers(json.data.users || []);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [API]);
+
+  return (
+    <div className="rounded-2xl bg-[#0f0f14] border border-white/10">
+      <div className="px-6 py-5 border-b border-white/10">
+        <h2 className="text-white text-xl font-semibold">
+          Blocked & Reported
+        </h2>
+      </div>
+
+      {loading && (
+        <div className="p-6 text-white/60">Loading…</div>
+      )}
+
+      {!loading && users.length === 0 && (
+        <div className="p-6 text-white/50">
+          You haven’t blocked anyone.
+        </div>
+      )}
+
+      <div className="divide-y divide-white/10">
+        {users.map(u => (
+          <div
+            key={u.userId}
+            className="flex items-center justify-between px-6 py-4"
+          >
+            <div className="flex items-center gap-4">
+              <Image
+                src={u.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                alt={u.name}
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
+              <div>
+                <p className="text-white text-sm font-medium">
+                  {u.name}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
+function RechargeHistorySection() {
+  const API = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.colio.in/api";
+  const LIMIT = 5;
+
+  const [items, setItems] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const fetchData = async (p = 1, append = false) => {
+    setLoading(true);
+    try {
+      const token = getToken();
+      const res = await fetch(
+        `${API}/user/getrechargehistory?page=${p}&limit=${LIMIT}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const json = await res.json();
+      if (json.success) {
+        setItems(prev => append ? [...prev, ...json.data.items] : json.data.items);
+        setHasMore(json.data.pagination.hasNextPage);
+        setPage(p);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(1, false);
+  }, []);
+
+  return (
+    <div className="rounded-2xl bg-[#0f0f14] border border-white/10">
+      <div className="px-6 py-5 border-b border-white/10">
+        <h2 className="text-white text-xl font-semibold">
+          Recharge History
+        </h2>
+      </div>
+
+      <div className="divide-y divide-white/10">
+        {items.map(r => (
+          <div
+            key={r._id}
+            className="flex justify-between px-6 py-4"
+          >
+            <div>
+              <p className="text-white font-medium">
+                ₹{r.grossAmount}
+              </p>
+              <p className="text-white/40 text-xs">
+                {r.method}
+              </p>
+            </div>
+            <div>
+              <p className="text-white font-medium">
+                Tokens Credited: {r.walletCreditAmount}
+              </p>
+            </div>
+            <div>
+              <p className="text-white font-medium">
+                UID: {r.cfPaymentId}
+              </p>
+            </div>
+
+            <div className="text-right">
+              <p className="text-white/50 text-xs">
+                {new Date(r.createdAt).toLocaleString()}
+              </p>
+              <p
+                className={`text-xs font-semibold ${
+                  r.status === "success"
+                    ? "text-green-400"
+                    : r.status === "failed"
+                    ? "text-red-400"
+                    : "text-yellow-400"
+                }`}
+              >
+                {r.status.toUpperCase()}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {hasMore && (
+        <div className="p-5 flex justify-center">
+          <button
+            disabled={loading}
+            onClick={() => fetchData(page + 1, true)}
+            className="px-5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm"
+          >
+            {loading ? "Loading…" : "Load more"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

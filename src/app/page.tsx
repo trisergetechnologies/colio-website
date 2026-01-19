@@ -17,6 +17,7 @@ import SignInModalClient from "./components/signinModel/SignInModalClient";
 import HeroGrid from "./components/home/HeroGrid/HeroGrid";
 import { getToken } from "@/lib/utils/tokenHelper";
 import HeroGridPageClient from "./page-client";
+import { cookies } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Colio",
@@ -26,15 +27,22 @@ const comingSoon = false;
 
 
 
-export default function Home() {
+export default async function Home() {
+
+  const getServerToken = async ()=> {
+  const cookieStore = await cookies();
+  return cookieStore.get('accessToken')?.value ?? null;
+};
 
   const isAuthenticated = async()=>{
-    const token = await getToken();
+    const token = await getServerToken();
+    console.log("token", token);
     if(token) return true
     return false
   }
 
-  const checked = isAuthenticated();
+  const checked = await isAuthenticated();
+  console.log("isAuthenticated: ",checked);
 
   if(comingSoon){
   return(
@@ -56,7 +64,7 @@ export default function Home() {
       {/* <AppDownloadSection/> */}
       <ContactForm />
       <Footer />
-       <WelcomeModalClient />
+       {!checked && <WelcomeModalClient />}
        <BestMatchModalClient />
        <SignInModalClient/> 
     </main>
