@@ -53,7 +53,7 @@ export default async function Home() {
   return (
     <main>
       <Header />
-      <HeroGridPageClient/>
+      {/* <HeroGridPageClient/> */}
       <AvailabilityToast />
       <Banner/>
       <TopIndividuals />
