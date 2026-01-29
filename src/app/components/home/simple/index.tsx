@@ -8,7 +8,7 @@ const FEATURES = [
   {
     id: 1,
     title: "Verified Profiles",
-    desc: "No bots. No fakes. Every user is verified for authentic connections.",
+    desc: "Every listener and user is verified to ensure safe and genuine conversations.",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -18,8 +18,8 @@ const FEATURES = [
   },
   {
     id: 2,
-    title: "HD Video Calls",
-    desc: "Experience crystal clear, low-latency video designed for intimacy.",
+    title: "HD Audio & Video Sessions",
+    desc: "Enjoy clear, low-latency audio and video conversations for smooth communication.",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
@@ -29,8 +29,8 @@ const FEATURES = [
   },
   {
     id: 3,
-    title: "Private & Secure",
-    desc: "Your privacy is our priority. End-to-end encryption on every call.",
+    title: "Secure & Private",
+    desc: "Your conversations are protected with secure technology and privacy safeguards.",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
         <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
@@ -66,7 +66,7 @@ export default function FeaturesSection() {
             transition={{ delay: 0.1 }}
             className="text-gray-400 max-w-2xl mx-auto text-lg"
           >
-            Built for those who value quality, speed, and discretion.
+            Built for users who value quality, safety, and reliable communication.
           </motion.p>
         </div>
 

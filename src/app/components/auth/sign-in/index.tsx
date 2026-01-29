@@ -97,7 +97,7 @@ export default function Signin() {
             
             {/* Inspirational Quote instead of count */}
             <p className="mt-3 text-lg font-medium text-white/90 drop-shadow-md italic">
-              "Where genuine connections spark."
+              "Where nobody will judge you"
             </p>
           </div>
 

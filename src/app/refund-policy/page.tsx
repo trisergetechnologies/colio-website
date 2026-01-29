@@ -29,7 +29,7 @@ export default function RefundPolicyPage() {
         {/* Card */}
         <div className="relative rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-xl shadow-[0_0_80px_rgba(217,70,239,0.12)]">
           <div className="px-8 sm:px-12 py-12 sm:py-14 space-y-12 text-white/80 leading-relaxed text-lg">
-            
+
             <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 1. Introduction
@@ -102,9 +102,19 @@ export default function RefundPolicyPage() {
                 details for assistance.
               </p>
               <p className="mt-2 font-medium">
-                📧 thisiscolio@gmail.com
+                📧 management@colio.in
+              </p>
+
+              {/* Address Added */}
+              <p className="mt-4 text-white/70 text-base leading-relaxed">
+                📍 <strong>Registered Office Address:</strong><br />
+                Unit No. 604, 6th Floor, Bhutani Alphathum,<br />
+                Nagla Charandas, Near NEPZ Sub Post Office,<br />
+                Sector 90, Noida, Gautambuddha Nagar,<br />
+                Uttar Pradesh - 201305, India
               </p>
             </div>
+
 
           </div>
         </div>

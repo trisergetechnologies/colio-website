@@ -133,7 +133,7 @@ export default function SignInModal({ open, onClose }: Props) {
                   Colio
                 </h1>
                 <p className="mt-3 text-lg font-medium text-white/90 drop-shadow-md italic">
-                  "Where genuine connections spark."
+                  "Where nobody will judge you."
                 </p>
               </div>
 

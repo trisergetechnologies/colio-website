@@ -150,9 +150,19 @@ export default function TermsAndConditionsPage() {
                 please contact us at:
               </p>
               <p className="mt-2 font-medium">
-                📧 thisiscolio@gmail.com
+                📧 management@colio.in
+              </p>
+
+              {/* Address Added */}
+              <p className="mt-4 text-white/70 text-base leading-relaxed">
+                📍 <strong>Registered Office Address:</strong><br />
+                Unit No. 604, 6th Floor, Bhutani Alphathum,<br />
+                Nagla Charandas, Near NEPZ Sub Post Office,<br />
+                Sector 90, Noida, Gautambuddha Nagar,<br />
+                Uttar Pradesh - 201305, India
               </p>
             </div>
+
 
           </div>
         </div>

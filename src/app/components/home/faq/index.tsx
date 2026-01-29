@@ -44,8 +44,8 @@ export default function Faq() {
             Frequently Asked Questions
           </h2>
           <p className="text-white/85 lg:text-lg font-normal max-w-2xl mx-auto leading-relaxed">
-            Everything you need to know about how Colio works —  
-            privacy, security, payments, and making real connections.
+            Everything you need to know about how Colio works — privacy, security,
+            payments, and safe conversations on our platform.
           </p>
         </motion.div>
 
@@ -126,7 +126,7 @@ export default function Faq() {
             >
               <Image
                 src={getImagePath("/images/faq/faq.svg")}
-                alt="FAQ Illustration"
+                alt="Colio FAQ support illustration"
                 width={700}
                 height={400}
                 className="drop-shadow-[0_0_30px_rgba(217,70,239,0.35)]"

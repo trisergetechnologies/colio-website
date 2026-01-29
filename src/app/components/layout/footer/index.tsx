@@ -27,24 +27,16 @@ const Footer = () => {
           {/* --- Left / Logo --- */}
           <div className="lg:col-span-5">
             <div className="mb-6">
-              {/* <Image
-                src={getImagePath("/images/logo/logo.svg")}
-                alt="Colio Logo"
-                width={160}
-                height={50}
-                className="h-12 w-auto object-contain"
-              /> */}
-              <h2 style={{"fontWeight": 100}} >C O L I O</h2>
+              <h2 style={{ fontWeight: 100 }}>C O L I O</h2>
             </div>
 
             <p className="text-white/80 text-sm leading-relaxed max-w-[420px] mb-8">
-              Colio isn’t just another connection building app — it’s your space to be real.
-              A place where you can talk, vent, laugh, ask, share, or just vibe with real people who actually get it.
-              Whether you’re bored, curious, stressed, or simply craving a good conversation, Colio connects you instantly 
-              through call, chat, or video — no pressure, no judgment, just genuine connection. 
+              Colio is a social communication platform designed for meaningful and respectful conversations.
+              Users can interact through text, voice, and video communication features in a moderated and secure environment.
+              The platform is intended for general social interaction and communication support, with strict community guidelines in place.
               <br />
               <span className="text-white/80">
-                Safe. Simple. Rewarding.
+                Secure. Reliable. Community-focused.
               </span>
             </p>
 
@@ -96,7 +88,7 @@ const Footer = () => {
             <ul className="space-y-5">
               <li>
                 <Link
-                  href="tel:+919876543210"
+                  href="tel:+918368354151"
                   className="flex items-center gap-2 text-white/70 hover:text-primary text-sm transition-colors"
                 >
                   <Image
@@ -111,7 +103,7 @@ const Footer = () => {
 
               <li>
                 <Link
-                  href="mailto:support@colio.app"
+                  href="mailto:management@colio.in"
                   className="flex items-center gap-2 text-white/70 hover:text-primary text-sm transition-colors"
                 >
                   <Image
@@ -120,7 +112,7 @@ const Footer = () => {
                     width={20}
                     height={20}
                   />
-                  thisiscolio@gmail.com
+                  management@colio.in
                 </Link>
               </li>
             </ul>
@@ -131,7 +123,7 @@ const Footer = () => {
       {/* --- Bottom Bar --- */}
       <div className="relative border-t border-white/10 py-6 px-4 text-center z-10">
         <p className="text-white/70 text-sm">
-          © {new Date().getFullYear()} Colio Tech Private Limited | All Rights Reserved. 
+          © {new Date().getFullYear()} Colio Tech Private Limited | All Rights Reserved.
         </p>
       </div>
     </footer>

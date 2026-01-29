@@ -44,7 +44,7 @@ export default function Banner() {
       {/* Gentle overlay for depth */}
       <div className="absolute inset-0 bg-black/40 z-10"></div>
 
-      {/* ✅ Fade to next section */}
+      {/* Fade to next section */}
       <div
         className="absolute bottom-0 left-0 w-full h-[220px] z-20 pointer-events-none"
         style={{
@@ -71,16 +71,16 @@ export default function Banner() {
                 backgroundImage: `linear-gradient(90deg, ${colors.button.start}, ${colors.button.end})`,
               }}
             >
-              Premium Video Chat for Effortless Friendships
+              Meaningful Conversations. Real Human Connection.
             </span>
             <br />
             <span className="text-white drop-shadow-[0_0_15px_rgba(217,70,239,0.4)]">
-              Flow into Chats That Feel Like Home.
+              Talk, Share, and Feel Heard.
             </span>
           </h1>
 
           <p className="text-white/85 text-lg md:text-xl max-w-[90%] lg:max-w-[550px] mx-auto lg:mx-0 mb-10 leading-relaxed">
-            Experience the future of social connection with Colio's intuitive 1v1 video chat app. Jump into safe, high-quality calls with real individuals worldwide—no bots, just pure flow. Tailored for the bold explorer: moderated safety, instant matches, and vibes that turn strangers into stories.
+            Colio is a social conversation platform where you can connect with verified listeners for friendly discussions, emotional sharing, and communication support.
           </p>
 
           <div className="flex flex-wrap justify-center lg:justify-start gap-6">
@@ -93,12 +93,14 @@ export default function Banner() {
                 background: `linear-gradient(90deg, ${colors.button.start}, ${colors.button.end})`,
               }}
             >
-              Get Started
+              Start Conversation
             </motion.a>
 
             <div className="flex flex-wrap justify-center lg:justify-start gap-6">
               <motion.a
-                onClick={() => window.dispatchEvent(new Event("open-best-match"))}
+                onClick={() =>
+                  window.dispatchEvent(new Event("open-listener-match"))
+                }
                 whileHover={{ scale: 1.07 }}
                 whileTap={{ scale: 0.97 }}
                 className="text-lg font-semibold text-white py-3 px-12 rounded-2xl shadow-lg transition-all"
@@ -106,19 +108,17 @@ export default function Banner() {
                   background: `linear-gradient(90deg, ${colors.button.start}, ${colors.button.end})`,
                 }}
               >
-                Best Match For You
+                Find a Listener
               </motion.a>
             </div>
-
-            {/* <motion.button
-              whileHover={{ scale: 1.05 }}
-              onClick={() => setOpen(true)}
-              className="flex items-center gap-3 px-6 py-3 border border-white/30 rounded-2xl text-white/90 text-lg backdrop-blur-sm hover:bg-white/10 transition-all"
-            >
-              <Icon icon="tabler:play-filled" className="text-2xl text-[#f0abfc]" />
-              Watch How It Works
-            </motion.button> */}
           </div>
+
+          {/* Compliance Disclaimer */}
+          <p className="text-xs text-white/50 mt-6">
+            Colio is a social conversation platform. We do not provide dating,
+            romantic, or adult services. All conversations must follow community
+            guidelines and respectful communication policies.
+          </p>
         </motion.div>
 
         {/* Right */}
@@ -132,7 +132,7 @@ export default function Banner() {
           <div className="relative w-full max-w-lg mx-auto">
             <Image
               src={getImagePath("/images/banner/wallpaper-hero01.png")}
-              alt="Colio App Preview"
+              alt="Colio conversation platform interface"
               width={1280}
               height={1080}
               className="rounded-2xl relative z-10 drop-shadow-[0_0_40px_rgba(217,70,239,0.4)]"
@@ -142,7 +142,7 @@ export default function Banner() {
         </motion.div>
       </motion.div>
 
-      {/* 🎥 Video Modal */}
+      {/* Video Modal */}
       {isOpen && (
         <motion.div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
