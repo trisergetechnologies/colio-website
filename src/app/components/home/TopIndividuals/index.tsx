@@ -274,7 +274,7 @@ export default function TopIndividuals() {
                   className="relative h-[420px] overflow-hidden rounded-3xl border border-white/10 bg-black/40"
                 >
                   {/* Image */}
-                  <Image src={p.avatar} alt={p.name} className="" />
+                  <Image src={p.avatar} alt={p.name} fill className="object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
                   {/* Actions ONLY when logged in */}
