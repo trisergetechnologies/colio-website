@@ -8,7 +8,13 @@ const nextConfig = {
   basePath: basePath,
   assetPrefix: basePath,
   images: {
-    unoptimized: true
+    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "api.colio.in",
+      },
+    ],
   },
   typescript: {
     ignoreBuildErrors: true,  // Ignore TypeScript errors during build
