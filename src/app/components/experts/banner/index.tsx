@@ -15,8 +15,6 @@ const languages = [
   "Telugu",
 ];
 
-// const sortOptions = ["Top Rated", "Most Active", "Newest", "Trending"];
-
 export default function ExpertHero() {
   return (
     <section
@@ -53,20 +51,20 @@ export default function ExpertHero() {
             className="text-sm sm:text-base md:text-lg font-semibold mb-3 tracking-wide"
             style={{ color: colors.accent[400], letterSpacing: "2px" }}
           >
-            FIND YOUR PEOPLE
+            FIND A LISTENER
           </p>
 
           <h1
             className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-6 tracking-tight text-center mx-auto max-w-3xl sm:max-w-4xl"
             style={gradientStyles.textGradient}
           >
-            Connect with real people who match your vibe, values, and language.
+            Connect with verified conversation partners in your preferred language
           </h1>
 
           <p className="text-white/85 max-w-2xl mx-auto text-sm sm:text-base md:text-lg leading-relaxed font-medium px-2">
-            Browse our growing list of verified, highly-rated individuals across
-            the world. Search by name, filter by language, and sort the way you
-            like.
+            Browse our network of moderated listeners and conversation partners.
+            You can search by name, filter by language, and select a suitable
+            person for respectful and meaningful conversation.
           </p>
         </motion.div>
       </div>

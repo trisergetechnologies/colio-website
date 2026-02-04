@@ -246,7 +246,7 @@ function WalletSection({ user }: any) {
 
       <div className=" gap-6">
         <WalletMetric
-          title="Tokens"
+          title="Coins"
           amount={user?.wallet?.main || 0}
           accent="from-[#22c55e] to-[#16a34a]"
         />
@@ -419,7 +419,7 @@ function RechargeHistorySection() {
             </div>
             <div>
               <p className="text-white font-medium">
-                Tokens Credited: {r.walletCreditAmount}
+                Coins Credited: {r.walletCreditAmount}
               </p>
             </div>
             <div>

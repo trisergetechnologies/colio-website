@@ -377,10 +377,10 @@ export default function ExpertsList() {
         <div className="mb-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
             <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-              Experts
+          Listeners
             </h2>
             <p className="text-white/60 mt-2 text-base">
-              Connect with expert consultants — voice, video or chat.
+              Connect with Our Listeners — voice, video or chat
             </p>
           </div>
 

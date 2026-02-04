@@ -44,11 +44,11 @@ export default function RefundPolicyPage() {
 
             <div>
               <h2 className="text-2xl font-semibold text-white mb-4">
-                2. Non-Refundable Token Purchases
+                2. Non-Refundable Coins Purchases
               </h2>
               <p>
-                All payments made for purchasing tokens on the Colio platform
-                are <strong>non-refundable</strong>. Once tokens are successfully
+                All payments made for purchasing Coinss on the Colio platform
+                are <strong>non-refundable</strong>. Once Coinss are successfully
                 credited to your account, the transaction is considered final
                 and cannot be reversed, transferred, or refunded under any
                 circumstances.
@@ -62,7 +62,7 @@ export default function RefundPolicyPage() {
               <p>
                 In the event of a payment failure, technical error, or any
                 mishappening during the transaction where the amount is debited
-                from your bank account but tokens are not credited to your
+                from your bank account but Coinss are not credited to your
                 Colio account, the amount will be eligible for a refund.
               </p>
             </div>

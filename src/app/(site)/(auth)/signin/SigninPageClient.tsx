@@ -13,7 +13,7 @@ export default function SigninPageClient() {
 
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated) {
-      router.replace("/experts");
+      router.replace("/");
     }
   }, [isAuthLoading, isAuthenticated]);
 
