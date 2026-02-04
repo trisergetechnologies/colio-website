@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getToken } from "@/lib/utils/tokenHelper";
 import axios from "axios";
 import { motion } from "framer-motion";
-import { Coins } from "lucide-react";
+import { Coins, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { IoClose } from "react-icons/io5";
@@ -49,32 +49,151 @@ export default function WalletPopover({ onClose }: WalletPopoverProps) {
     router.push('/recharge'); 
   };
 
-  const handleRecharge = async (rechargeAmount: number) => {
-    try {
-      setIsProcessing(true);
-      // 1. Close the popover
-      if (onClose) onClose();
+  const loadRazorpay = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") return resolve(false);
 
-      const token = getToken();
-      const { data } = await axios.post(
-        `${API_BASE_URL}/user/rechargewallet`,
-        { amount: Number(rechargeAmount) },
+    if ((window as any).Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
+const pollTransactionStatus = async (
+  orderId: string,
+  token: string,
+  onSuccess: () => void,
+  onFailure: () => void
+) => {
+  const start = Date.now();
+  const timeout = 2 * 60 * 1000; // 2 min max
+
+  const interval = setInterval(async () => {
+    if (Date.now() - start > timeout) {
+      clearInterval(interval);
+      onFailure();
+      return;
+    }
+
+    try {
+      const { data } = await axios.get(
+        `${API_BASE_URL}/customer/transaction-status/${orderId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const cashfree = await load({ mode: "production" });
+      const status = data?.data?.status;
 
-      cashfree.checkout({
-        paymentSessionId: data.data.paymentSessionId,
-        redirectTarget: "_modal",
-      });
-    } catch (err) {
-      setError("Payment initiation failed");
-    } finally {
-      setIsProcessing(false);
-      refreshUser();
-    }
-  };
+      if (status === "CAPTURED") {
+        clearInterval(interval);
+        onSuccess();
+      }
+
+      if (status === "FAILED") {
+        clearInterval(interval);
+        onFailure();
+      }
+    } catch (_) {}
+  }, 3000);
+};
+
+
+
+const handleRecharge = async (amount: number) => {
+  try {
+    setIsProcessing(true);
+    setError(null);
+
+    const token = getToken();
+    if (!token) return router.push("/login");
+
+    // 1️⃣ Create order
+    const { data } = await axios.post(
+      `${API_BASE_URL}/customer/recharge`,
+      { amount },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    const { razorpayOrderId, orderId, key, currency, amount: paise } = data.data;
+
+    await loadRazorpay();
+
+    const options = {
+      key,
+      amount: paise,
+      currency,
+      order_id: razorpayOrderId,
+
+      name: "Colio Wallet Recharge",
+
+      handler: () => {
+        // 2️⃣ Show processing UI
+        setIsProcessing(true);
+
+        pollTransactionStatus(
+          orderId,
+          token,
+          () => {
+            // ✅ SUCCESS
+            refreshUser();
+            router.replace("/"); // HOME
+          },
+          () => {
+            // ❌ FAILED
+            setIsProcessing(false);
+            setError("Payment failed or timed out");
+          }
+        );
+      },
+
+      modal: {
+        ondismiss: () => {
+          setIsProcessing(false);
+        },
+      },
+    };
+
+    new (window as any).Razorpay(options).open();
+  } catch (err: any) {
+    setError("Payment initiation failed");
+    setIsProcessing(false);
+  }
+};
+
+
+
+  // const handleRecharge = async (rechargeAmount: number) => {
+  //   try {
+  //     setIsProcessing(true);
+  //     // 1. Close the popover
+  //     if (onClose) onClose();
+
+  //     const token = getToken();
+  //     const { data } = await axios.post(
+  //       `${API_BASE_URL}/user/rechargewallet`,
+  //       { amount: Number(rechargeAmount) },
+  //       { headers: { Authorization: `Bearer ${token}` } }
+  //     );
+
+  //     const cashfree = await load({ mode: "production" });
+
+  //     cashfree.checkout({
+  //       paymentSessionId: data.data.paymentSessionId,
+  //       redirectTarget: "_modal",
+  //     });
+  //   } catch (err) {
+  //     setError("Payment initiation failed");
+  //   } finally {
+  //     setIsProcessing(false);
+  //     refreshUser();
+  //   }
+  // };
 
   return (
     <motion.div
@@ -90,6 +209,19 @@ export default function WalletPopover({ onClose }: WalletPopoverProps) {
         overflow-hidden mt-2
       "
     >
+      {isProcessing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="text-center">
+            <Loader2
+              className="animate-spin mx-auto mb-4 text-pink-500"
+              size={40}
+            />
+            <p className="text-white text-sm">
+              Processing payment… please wait
+            </p>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
         <div>
