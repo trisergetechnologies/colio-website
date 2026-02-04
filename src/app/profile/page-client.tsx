@@ -115,32 +115,70 @@ function ProfileHero({ user }: any) {
 ====================================================== */
 
 function BasicInfoPanel({ user }: any) {
-  const [isEditing, setIsEditing] = useState(false);
+  const API =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.colio.in/api";
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const [gender, setGender] = useState(user?.gender || "");
   const [dob, setDob] = useState(
     user?.dateOfBirth
       ? new Date(user.dateOfBirth).toISOString().slice(0, 10)
       : ""
   );
 
-  const [languages, setLanguages] = useState<string[]>(
-    Array.isArray(user?.languages) ? user.languages.slice(0, 3) : []
-  );
+  const isAdult = (date: string) => {
+    const birth = new Date(date);
+    const today = new Date();
+    const age =
+      today.getFullYear() -
+      birth.getFullYear() -
+      (today <
+      new Date(today.getFullYear(), birth.getMonth(), birth.getDate())
+        ? 1
+        : 0);
 
-  const updateLanguage = (i: number, value: string) => {
-    const copy = [...languages];
-    copy[i] = value;
-    setLanguages(copy);
+    return age >= 18;
   };
 
-  const addLanguage = () => {
-    if (languages.length < 3) setLanguages([...languages, ""]);
-  };
+  const saveChanges = async () => {
+    if (!dob || !isAdult(dob)) {
+      alert("Age must be at least 18 years");
+      return;
+    }
 
-  const saveChanges = () => {
-    console.log("DOB:", dob);
-    console.log("Languages:", languages.filter(Boolean));
-    setIsEditing(false);
+    setLoading(true);
+
+    try {
+      const token = getToken();
+
+      const res = await fetch(`${API}/user/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          gender,
+          dateOfBirth: dob,
+        }),
+      });
+
+      const json = await res.json();
+
+      if (!json.success) {
+        alert(json.message || "Failed to update profile");
+        return;
+      }
+
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Profile update failed:", err);
+      alert("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -156,8 +194,9 @@ function BasicInfoPanel({ user }: any) {
           </button>
         ) : (
           <button
+            disabled={loading}
             onClick={saveChanges}
-            className="flex items-center gap-1 text-green-400"
+            className="flex items-center gap-1 text-green-400 disabled:opacity-50"
           >
             <IoCheckmark />
             Save
@@ -167,7 +206,20 @@ function BasicInfoPanel({ user }: any) {
 
       <div className="divide-y divide-white/10">
         <InfoRow label="Gender">
-          {user?.gender || "Not set"}
+          {!isEditing ? (
+            gender || "Not set"
+          ) : (
+            <select
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              className="bg-black/30 border border-white/20 rounded-lg px-3 py-1 text-white text-sm"
+            >
+              <option value="">Select</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          )}
         </InfoRow>
 
         <InfoRow label="Date of Birth">
@@ -180,31 +232,6 @@ function BasicInfoPanel({ user }: any) {
               onChange={(e) => setDob(e.target.value)}
               className="bg-black/30 border border-white/20 rounded-lg px-3 py-1 text-white text-sm"
             />
-          )}
-        </InfoRow>
-
-        <InfoRow label="Languages">
-          {!isEditing ? (
-            languages.length ? languages.join(", ") : "Not added"
-          ) : (
-            <div className="flex flex-col gap-2 items-end">
-              {languages.map((lang, i) => (
-                <input
-                  key={i}
-                  value={lang}
-                  onChange={(e) => updateLanguage(i, e.target.value)}
-                  className="bg-black/30 border border-white/20 rounded-lg px-3 py-1 text-white text-sm w-44"
-                />
-              ))}
-              {languages.length < 3 && (
-                <button
-                  onClick={addLanguage}
-                  className="text-xs text-purple-400"
-                >
-                  + Add language
-                </button>
-              )}
-            </div>
           )}
         </InfoRow>
 
@@ -364,7 +391,8 @@ function BlockedUsersSection() {
 
 
 function RechargeHistorySection() {
-  const API = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.colio.in/api";
+  const API =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.colio.in/api";
   const LIMIT = 5;
 
   const [items, setItems] = useState<any[]>([]);
@@ -377,14 +405,26 @@ function RechargeHistorySection() {
     try {
       const token = getToken();
       const res = await fetch(
-        `${API}/user/getrechargehistory?page=${p}&limit=${LIMIT}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${API}/customer/transactions?page=${p}&limit=${LIMIT}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+
       const json = await res.json();
+
       if (json.success) {
-        setItems(prev => append ? [...prev, ...json.data.items] : json.data.items);
-        setHasMore(json.data.pagination.hasNextPage);
-        setPage(p);
+        const transactions = json.data.transactions;
+
+        setItems(prev =>
+          append ? [...prev, ...transactions] : transactions
+        );
+
+        const { page, pages } = json.data.pagination;
+        setHasMore(page < pages);
+        setPage(page);
       }
     } finally {
       setLoading(false);
@@ -394,6 +434,19 @@ function RechargeHistorySection() {
   useEffect(() => {
     fetchData(1, false);
   }, []);
+
+  const statusColor = (status: string) => {
+    switch (status) {
+      case "CAPTURED":
+        return "text-green-400 bg-green-400/10";
+      case "AUTHORIZED":
+        return "text-blue-400 bg-blue-400/10";
+      case "FAILED":
+        return "text-red-400 bg-red-400/10";
+      default:
+        return "text-yellow-400 bg-yellow-400/10";
+    }
+  };
 
   return (
     <div className="rounded-2xl bg-[#0f0f14] border border-white/10">
@@ -407,24 +460,32 @@ function RechargeHistorySection() {
         {items.map(r => (
           <div
             key={r._id}
-            className="flex justify-between px-6 py-4"
+            className="grid grid-cols-1 md:grid-cols-4 gap-4 px-6 py-4"
           >
             <div>
-              <p className="text-white font-medium">
+              <p className="text-white font-semibold text-lg">
                 ₹{r.grossAmount}
               </p>
-              <p className="text-white/40 text-xs">
-                {r.method}
+              <p className="text-white/40 text-xs uppercase tracking-wide">
+                {r.paymentGateway}
               </p>
             </div>
+
             <div>
               <p className="text-white font-medium">
-                Tokens Credited: {r.walletCreditAmount}
+                Coins
+              </p>
+              <p className="text-white/60 text-sm">
+                {r.walletCreditAmount}
               </p>
             </div>
+
             <div>
               <p className="text-white font-medium">
-                UID: {r.cfPaymentId}
+                Payment ID
+              </p>
+              <p className="text-white/60 text-sm break-all">
+                {r.razorpayPaymentId || "—"}
               </p>
             </div>
 
@@ -432,17 +493,14 @@ function RechargeHistorySection() {
               <p className="text-white/50 text-xs">
                 {new Date(r.createdAt).toLocaleString()}
               </p>
-              <p
-                className={`text-xs font-semibold ${
-                  r.status === "success"
-                    ? "text-green-400"
-                    : r.status === "failed"
-                    ? "text-red-400"
-                    : "text-yellow-400"
-                }`}
+
+              <span
+                className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-semibold ${statusColor(
+                  r.status
+                )}`}
               >
-                {r.status.toUpperCase()}
-              </p>
+                {r.status == 'CAPTURED' ? 'SUCCESS' : r.status}
+              </span>
             </div>
           </div>
         ))}
@@ -453,7 +511,7 @@ function RechargeHistorySection() {
           <button
             disabled={loading}
             onClick={() => fetchData(page + 1, true)}
-            className="px-5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm"
+            className="px-6 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm transition disabled:opacity-50"
           >
             {loading ? "Loading…" : "Load more"}
           </button>
