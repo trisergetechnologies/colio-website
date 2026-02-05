@@ -60,13 +60,15 @@ const { initiateCall } = useCall();
             },
             params: {
               minRating: 4,
-              language: "english",
             },
           }
         );
 
         if (mounted && res.data?.success) {
           setConsultants(res.data.data.consultants || []);
+          if(res?.data?.data?.consultants?.length === 0){
+            onClose()
+          }
           setIndex(0);
         }
       } catch (err) {

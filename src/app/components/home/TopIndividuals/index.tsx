@@ -45,7 +45,7 @@ const DEMO_PROFILES: Profile[] = [
     profession: "Software Engineer",
     languages: ["English", "Hindi"],
     rating: 5,
-    avatar: "images/avatar/11.png",
+    avatar: require("@/assets/images/11.png"),
     availabilityStatus: "onWork",
   },
   {
@@ -56,7 +56,7 @@ const DEMO_PROFILES: Profile[] = [
     profession: "Psychologist",
     languages: ["English", "Hindi"],
     rating: 4,
-    avatar: "images/avatar/9.jpg",
+    avatar: require("@/assets/images/9.jpg"),
     availabilityStatus: "onWork",
   },
   {
@@ -67,7 +67,7 @@ const DEMO_PROFILES: Profile[] = [
     profession: "Business Consultant",
     languages: ["English", "Hindi"],
     rating: 5,
-    avatar: "images/avatar/12.png",
+    avatar: require("@/assets/images/12.png"),
     availabilityStatus: "onWork",
   },
   {
@@ -78,7 +78,7 @@ const DEMO_PROFILES: Profile[] = [
     profession: "Student Mentor",
     languages: ["English", "Hindi"],
     rating: 4,
-    avatar: "images/avatar/8.jpg",
+    avatar: require("@/assets/images/8.jpg"),
     availabilityStatus: "onWork",
   },
   {
@@ -89,7 +89,7 @@ const DEMO_PROFILES: Profile[] = [
     profession: "Doctor",
     languages: ["English", "Hindi"],
     rating: 5,
-    avatar: "images/avatar/13.png",
+    avatar: require("@/assets/images/13.png"),
     availabilityStatus: "onWork",
   },
   {
@@ -100,7 +100,7 @@ const DEMO_PROFILES: Profile[] = [
     profession: "Career Coach",
     languages: ["English", "Hindi"],
     rating: 5,
-    avatar: "images/avatar/10.jpg",
+    avatar: require("@/assets/images/10.jpg"),
     availabilityStatus: "onWork",
   },
   {
@@ -111,7 +111,7 @@ const DEMO_PROFILES: Profile[] = [
     profession: "Chartered Accountant",
     languages: ["English", "Hindi"],
     rating: 4,
-    avatar: "images/avatar/14.png",
+    avatar: require("@/assets/images/14.png"),
     availabilityStatus: "onWork",
   },
   {
@@ -122,7 +122,7 @@ const DEMO_PROFILES: Profile[] = [
     profession: "UI/UX Designer",
     languages: ["English", "Hindi"],
     rating: 5,
-    avatar: "images/avatar/15.png",
+    avatar: require("@/assets/images/15.png"),
     availabilityStatus: "onWork",
   },
 ];

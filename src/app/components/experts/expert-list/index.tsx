@@ -172,6 +172,7 @@ export default function ExpertsList() {
               headers: token ? { Authorization: `Bearer ${token}` } : undefined,
             }
           );
+          console.log(res)
 
           if (res.data?.success && (res.data.data?.consultants || res.data.data)) {
             const returned =
