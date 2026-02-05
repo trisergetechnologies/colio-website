@@ -58,9 +58,6 @@ const { initiateCall } = useCall();
             headers: {
               Authorization: `Bearer ${token}`,
             },
-            params: {
-              minRating: 4,
-            },
           }
         );
 
