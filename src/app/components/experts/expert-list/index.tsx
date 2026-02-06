@@ -32,6 +32,7 @@ type Consultant = {
   totalSessions?: number | null;
   availabilityStatus?: "onWork" | "offWork" | "busy";
   experienceMonths?: number | null;
+  dateOfBirth?: string | null;
 };
 
 type Pro = {
@@ -98,6 +99,27 @@ const cardVariants = {
   },
 };
 
+/* ---------------------------- Helper Functions ---------------------------- */
+
+const calculateAge = (dateOfBirth: string | null | undefined): number | null => {
+  if (!dateOfBirth) return null;
+  
+  try {
+    const dob = new Date(dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    
+    return age > 0 && age < 120 ? age : null;
+  } catch (error) {
+    return null;
+  }
+};
+
 /* ----------------------------- Component ---------------------------------- */
 
 export default function ExpertsList() {
@@ -154,6 +176,7 @@ export default function ExpertsList() {
               languages: f.languages || [],
               ratingAverage: f.ratingAverage || f.rating,
               availabilityStatus: f.availabilityStatus || "offWork",
+              dateOfBirth: f.dateOfBirth || f.dob || null,
             })) as Consultant[];
             setConsultants(normalized);
             setFavorites(normalized.map((c) => c.id));
@@ -190,6 +213,7 @@ export default function ExpertsList() {
               totalSessions: c.totalSessions || null,
               bio: c.bio || null,
               experienceMonths: c.experienceMonths || null,
+              dateOfBirth: c.dateOfBirth || c.dob || null,
             })) as Consultant[];
 
             if (append) {
@@ -214,6 +238,7 @@ export default function ExpertsList() {
               languages: p.languages,
               ratingAverage: p.rating,
               availabilityStatus: p.online ? "onWork" : "offWork",
+              dateOfBirth: null,
             })));
             setHasMore(ALL_PROFESSIONALS.length > PAGE_LIMIT);
             setUsingDummy(true);
@@ -228,6 +253,7 @@ export default function ExpertsList() {
           languages: p.languages,
           ratingAverage: p.rating,
           availabilityStatus: p.online ? "onWork" : "offWork",
+          dateOfBirth: null,
         })));
         setHasMore(ALL_PROFESSIONALS.length > PAGE_LIMIT);
         setUsingDummy(true);
@@ -255,6 +281,7 @@ export default function ExpertsList() {
         languages: p.languages,
         ratingAverage: p.rating,
         availabilityStatus: p.online ? "onWork" : "offWork",
+        dateOfBirth: null,
       })));
       setHasMore(nextVisible < ALL_PROFESSIONALS.length);
       return;
@@ -493,6 +520,8 @@ export default function ExpertsList() {
               const rating = (c.ratingAverage ?? (c as any).rating ?? 0) as number;
               const isOnline = c.availabilityStatus === "onWork" || (c as any).online;
               const isBusy = c.availabilityStatus === "busy";
+              const isDisabled = !isOnline; // Disabled if not online (busy or offline)
+              const age = calculateAge(c.dateOfBirth);
 
               return (
                 <motion.div
@@ -534,11 +563,16 @@ export default function ExpertsList() {
                         />
                       </div>
 
-                      {/* Name and languages */}
+                      {/* Name, age and languages */}
                       <div className="flex-1 min-w-0 pt-1">
-                        <h3 className="text-white text-lg font-semibold truncate leading-tight">
-                          {c.name}
-                        </h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-white text-lg font-semibold truncate leading-tight">
+                            {c.name}
+                          </h3>
+                          {age && (
+                            <span className="text-white/50 text-sm">• {age}</span>
+                          )}
+                        </div>
                         <p className="text-white/50 text-sm mt-1 truncate">
                           {c.languages?.join(" • ") || "English"}
                         </p>
@@ -642,17 +676,22 @@ export default function ExpertsList() {
                     </div>
                   </div>
 
-                  {/* Action buttons - SUPER FANCY VERSION */}
+                  {/* Action buttons - Keep color, just disable pointer events */}
                   <div className="relative px-5 pb-5">
                     <div className="flex items-center gap-2">
-                      {/* Voice Call Button - Emerald Gradient with Glow */}
+                      {/* Voice Call Button */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleVoiceCall(c);
+                          if (!isDisabled) handleVoiceCall(c);
                         }}
-                        className="group/btn relative flex-1 max-w-[140px] flex items-center justify-center gap-2 py-3 px-3 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
-                        title="Voice Call"
+                        disabled={isDisabled}
+                        className={`group/btn relative flex-1 max-w-[140px] flex items-center justify-center gap-2 py-3 px-3 rounded-xl overflow-hidden transition-all duration-300 ${
+                          isDisabled 
+                            ? 'cursor-not-allowed' 
+                            : 'hover:scale-[1.03] active:scale-[0.97]'
+                        }`}
+                        title={isDisabled ? "Currently Unavailable" : "Voice Call"}
                       >
                         {/* Animated pulsing glow */}
                         <div className="absolute -inset-2 bg-emerald-500/60 blur-2xl animate-[pulse_2s_ease-in-out_infinite]" />
@@ -672,14 +711,19 @@ export default function ExpertsList() {
                         </div>
                       </button>
 
-                      {/* Chat Button - Premium Glass Style */}
+                      {/* Chat Button */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          startChat(c);
+                          if (!isDisabled) startChat(c);
                         }}
-                        className="group/btn relative flex items-center justify-center p-3 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.08] active:scale-[0.95]"
-                        title="Chat"
+                        disabled={isDisabled}
+                        className={`group/btn relative flex items-center justify-center p-3 rounded-xl overflow-hidden transition-all duration-300 ${
+                          isDisabled 
+                            ? 'cursor-not-allowed' 
+                            : 'hover:scale-[1.08] active:scale-[0.95]'
+                        }`}
+                        title={isDisabled ? "Currently Unavailable" : "Chat"}
                       >
                         {/* Subtle pulsing glow */}
                         <div className="absolute -inset-1 bg-white/30 blur-lg animate-[pulse_3s_ease-in-out_infinite]" />
@@ -693,14 +737,19 @@ export default function ExpertsList() {
                         <IoChatbubbleOutline className="relative w-5 h-5 text-white/80 group-hover/btn:text-white transition-colors duration-200 drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]" />
                       </button>
 
-                      {/* Video Call Button - Pink Gradient with Glow */}
+                      {/* Video Call Button */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleVideoCall(c);
+                          if (!isDisabled) handleVideoCall(c);
                         }}
-                        className="group/btn relative flex-1 max-w-[140px] flex items-center justify-center gap-2 py-3 px-3 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
-                        title="Video Call"
+                        disabled={isDisabled}
+                        className={`group/btn relative flex-1 max-w-[140px] flex items-center justify-center gap-2 py-3 px-3 rounded-xl overflow-hidden transition-all duration-300 ${
+                          isDisabled 
+                            ? 'cursor-not-allowed' 
+                            : 'hover:scale-[1.03] active:scale-[0.97]'
+                        }`}
+                        title={isDisabled ? "Currently Unavailable" : "Video Call"}
                       >
                         {/* Animated pulsing glow */}
                         <div className="absolute -inset-2 bg-pink-500/60 blur-2xl animate-[pulse_2s_ease-in-out_infinite]" />

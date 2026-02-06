@@ -8,8 +8,7 @@ import { getToken } from "@/lib/utils/tokenHelper";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useCall } from "@/context/CallContext";
-
-
+import Image from "next/image";
 
 type Props = {
   open: boolean;
@@ -35,11 +34,11 @@ const API_BASE_URL = "https://api.colio.in/api";
 export default function BestMatchModal({ open, onClose }: Props) {
   const [consultants, setConsultants] = useState<Consultant[]>([]);
   const [index, setIndex] = useState(0);
-
   const [loading, setLoading] = useState(false);
+  
   const router = useRouter();
-const { isAuthenticated } = useAuth();
-const { initiateCall } = useCall();
+  const { isAuthenticated } = useAuth();
+  const { initiateCall } = useCall();
 
   /* ================= FETCH BEST MATCH ================= */
   useEffect(() => {
@@ -63,8 +62,8 @@ const { initiateCall } = useCall();
 
         if (mounted && res.data?.success) {
           setConsultants(res.data.data.consultants || []);
-          if(res?.data?.data?.consultants?.length === 0){
-            onClose()
+          if (res?.data?.data?.consultants?.length === 0) {
+            onClose();
           }
           setIndex(0);
         }
@@ -80,7 +79,7 @@ const { initiateCall } = useCall();
     return () => {
       mounted = false;
     };
-  }, [open]);
+  }, [open, onClose]);
 
   /* ================= SAFE CONSULTANT ================= */
   const consultant = useMemo(() => {
@@ -99,7 +98,6 @@ const { initiateCall } = useCall();
     return () => clearInterval(interval);
   }, [open, consultants]);
 
-
   /* ================= ESC CLOSE ================= */
   useEffect(() => {
     if (!open) return;
@@ -111,6 +109,55 @@ const { initiateCall } = useCall();
     window.addEventListener("keydown", onEsc);
     return () => window.removeEventListener("keydown", onEsc);
   }, [open, onClose]);
+
+  /* ================= CALL HANDLERS ================= */
+  const handleVoiceCall = () => {
+    if (!consultant) return;
+    if (!isAuthenticated) {
+      router.push("/signin");
+      return;
+    }
+
+    initiateCall(
+      consultant.id,
+      "voice",
+      consultant.name,
+      consultant.avatar
+    );
+  };
+
+  const handleVideoCall = () => {
+    if (!consultant) return;
+    if (!isAuthenticated) {
+      router.push("/signin");
+      return;
+    }
+
+    initiateCall(
+      consultant.id,
+      "video",
+      consultant.name,
+      consultant.avatar
+    );
+  };
+
+  const handleChat = () => {
+    if (!consultant) return;
+    if (!isAuthenticated) {
+      router.push("/signin");
+      return;
+    }
+    const params = new URLSearchParams({
+      participantId: consultant.id,
+      participantName: consultant.name,
+      participantAvatar: consultant.avatar || "",
+      availabilityStatus: consultant.availabilityStatus || "offWork",
+    });
+    router.push(`/chat/new?${params.toString()}`);
+  };
+
+  /* ================= CHECK IF DISABLED ================= */
+  const isDisabled = consultant?.availabilityStatus !== "onWork";
 
   /* ================= STATES ================= */
   if (!open) return null;
@@ -146,53 +193,8 @@ const { initiateCall } = useCall();
       </AnimatePresence>
     );
   }
-  const handleVoiceCall = () => {
-  if (!consultant) return;
-  if (!isAuthenticated) {
-    router.push("/signin");
-    return;
-  }
 
-  initiateCall(
-    consultant.id,
-    "voice",
-    consultant.name,
-    consultant.avatar
-  );
-};
-
-const handleVideoCall = () => {
-  if (!consultant) return;
-  if (!isAuthenticated) {
-    router.push("/signin");
-    return;
-  }
-
-  initiateCall(
-    consultant.id,
-    "video",
-    consultant.name,
-    consultant.avatar
-  );
-};
-
-const handleChat = () => {
-  if (!consultant) return;
-  if (!isAuthenticated) {
-    router.push("/signin");
-    return;
-  }
-    const params = new URLSearchParams({
-      participantId: consultant.id,
-      participantName: consultant.name,
-      participantAvatar: consultant.avatar || '',
-      availabilityStatus: consultant.availabilityStatus || 'offWork',
-    });
-    router.push(`/chat/new?${params.toString()}`);
-};
-
-
-  /* ================= UI (UNCHANGED) ================= */
+  /* ================= UI ================= */
   return (
     <AnimatePresence>
       <motion.div
@@ -209,73 +211,132 @@ const handleChat = () => {
           exit={{ y: 60, opacity: 0 }}
           transition={{ duration: 0.45, ease: "easeOut" }}
           className="
-    relative
-    w-[95%] max-w-[520px]
-    h-[640px]
-    rounded-[32px]
-    overflow-hidden
-    bg-white/10
-    backdrop-blur-2xl
-    border border-white/30
-    shadow-2xl
-  "
+            relative
+            w-[95%] max-w-[520px]
+            h-[640px]
+            rounded-[32px]
+            overflow-hidden
+            bg-white/10
+            backdrop-blur-2xl
+            border border-white/30
+            shadow-2xl
+          "
         >
-
           {/* Close */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-20 text-white/80 hover:text-white"
+            className="absolute top-4 right-4 z-20 text-white/80 hover:text-white transition-colors"
+            aria-label="Close"
           >
-            <X />
+            <X size={24} />
           </button>
 
           {/* Image */}
-          <motion.img
+          <motion.div
             key={consultant.id}
-            src={
-              consultant.avatar ||
-              "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-            }
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0"
             initial={{ opacity: 0, scale: 1.08 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
-          />
+          >
+            <Image
+              src={consultant.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+              alt={consultant.name}
+              fill
+              className="object-cover transition-all duration-500"
+            />
+          </motion.div>
 
           {/* Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
           {/* Online Indicator */}
-          <div className="absolute top-4 left-4 z-20 flex items-center gap-2">
-            <span className="relative flex h-3 w-3">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping" />
-              <span className="relative inline-flex h-3 w-3 rounded-full bg-green-400" />
-            </span>
-            <span className="text-sm text-white/90">Online</span>
+          {consultant.availabilityStatus === "onWork" && (
+            <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10">
+              <span className="relative flex h-3 w-3">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75 animate-ping" />
+                <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500" />
+              </span>
+              <span className="text-sm text-white/90 font-semibold uppercase tracking-wider">Online</span>
+            </div>
+          )}
+
+          {consultant.availabilityStatus === "busy" && (
+            <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10">
+              <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px] shadow-red-500/50" />
+              <span className="text-sm text-white/90 font-semibold uppercase tracking-wider">Busy</span>
+            </div>
+          )}
+
+          {consultant.availabilityStatus === "offWork" && (
+            <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10">
+              <div className="w-2 h-2 rounded-full bg-zinc-500 shadow-[0_0_8px] shadow-zinc-500/50" />
+              <span className="text-sm text-white/90 font-semibold uppercase tracking-wider">Offline</span>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3">
+            {/* Voice Call */}
+            <motion.button
+              onClick={() => !isDisabled && handleVoiceCall()}
+              disabled={isDisabled}
+              whileHover={!isDisabled ? { scale: 1.1 } : {}}
+              whileTap={!isDisabled ? { scale: 0.95 } : {}}
+              className={`
+                w-12 h-12 rounded-full flex items-center justify-center 
+                transition-all duration-300 shadow-lg
+                ${
+                  isDisabled
+                    ? "bg-black/40 text-white/30 cursor-not-allowed"
+                    : "bg-white/90 text-green-600 hover:bg-white hover:shadow-xl"
+                }
+              `}
+              aria-label="Voice call"
+            >
+              <Phone size={20} />
+            </motion.button>
+
+            {/* Chat */}
+            <motion.button
+              onClick={() => !isDisabled && handleChat()}
+              disabled={isDisabled}
+              whileHover={!isDisabled ? { scale: 1.15 } : {}}
+              whileTap={!isDisabled ? { scale: 0.95 } : {}}
+              className={`
+                w-12 h-12 rounded-full flex items-center justify-center 
+                transition-all duration-300 shadow-lg
+                ${
+                  isDisabled
+                    ? "bg-black/40 text-white/30 cursor-not-allowed"
+                    : "bg-green-500 text-white hover:bg-green-600 hover:shadow-xl scale-110"
+                }
+              `}
+              aria-label="Chat"
+            >
+              <MessageCircle size={20} />
+            </motion.button>
+
+            {/* Video Call */}
+            <motion.button
+              onClick={() => !isDisabled && handleVideoCall()}
+              disabled={isDisabled}
+              whileHover={!isDisabled ? { scale: 1.1 } : {}}
+              whileTap={!isDisabled ? { scale: 0.95 } : {}}
+              className={`
+                w-12 h-12 rounded-full flex items-center justify-center 
+                transition-all duration-300 shadow-lg
+                ${
+                  isDisabled
+                    ? "bg-black/40 text-white/30 cursor-not-allowed"
+                    : "bg-white/90 text-green-600 hover:bg-white hover:shadow-xl"
+                }
+              `}
+              aria-label="Video call"
+            >
+              <Video size={20} />
+            </motion.button>
           </div>
-
-          {/* Actions */}
-          {/* <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-4">
-            <Action
-              icon={<Phone />}
-              price={consultant.ratePerMinute || 10}
-              onClick={handleVoiceCall}
-            />
-
-            <Action
-              icon={<MessageCircle />}
-              price={Math.max((consultant.ratePerMinute || 10) / 2, 5)}
-              highlight
-              onClick={handleChat}
-            />
-
-            <Action
-              icon={<Video />}
-              price={(consultant.ratePerMinute || 10) * 2}
-              onClick={handleVideoCall}
-            />
-          </div> */}
-
 
           {/* Bottom Info */}
           <motion.div
@@ -287,54 +348,29 @@ const handleChat = () => {
           >
             <h3 className="text-2xl font-semibold">{consultant.name}</h3>
 
-            <p className="text-sm text-white/80 mt-1">
-              {consultant.bio}
-            </p>
+            {consultant.bio && (
+              <p className="text-sm text-white/80 mt-1 line-clamp-2">
+                {consultant.bio}
+              </p>
+            )}
 
             <div className="flex items-center gap-4 mt-3 text-sm">
               <div className="flex items-center gap-1">
-                <Star className="text-yellow-400" size={16} />
-                {consultant.ratingAverage?.toFixed(1) || "0.0"}
+                <Star className="text-yellow-400 fill-yellow-400" size={16} />
+                <span>{consultant.ratingAverage?.toFixed(1) || "0.0"}</span>
               </div>
               <span className="text-white/70">
                 {consultant.totalSessions || 0}+ sessions
               </span>
+              {consultant.languages && consultant.languages.length > 0 && (
+                <span className="text-white/70">
+                  {consultant.languages.join(", ")}
+                </span>
+              )}
             </div>
           </motion.div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
-  );
-}
-
-/* ================= ACTION BUTTON ================= */
-function Action({
-  icon,
-  price,
-  highlight,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  price: number;
-  highlight?: boolean;
-  onClick?: () => void;
-}) {
-  return (
-    <div className="flex flex-col items-center">
-      <button
-        onClick={onClick}
-        className={`
-          w-14 h-14 rounded-2xl flex items-center justify-center transition
-          ${
-            highlight
-              ? "bg-green-500 text-white scale-110 shadow-xl"
-              : "bg-white/80 text-green-600 hover:scale-105"
-          }
-        `}
-      >
-        {icon}
-      </button>
-      {/* <span className="mt-1 text-xs text-white/90">₹{price}/min</span> */}
-    </div>
   );
 }
