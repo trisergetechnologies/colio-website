@@ -34,7 +34,7 @@ type Profile = {
   availabilityStatus: string;
 };
 
-/* ---------------- DEMO DATA (REAL NAMES + IMAGES) ---------------- */
+/* ---------------- DEMO DATA ---------------- */
 
 const DEMO_PROFILES: Profile[] = [
   {
@@ -57,7 +57,7 @@ const DEMO_PROFILES: Profile[] = [
     languages: ["English", "Hindi"],
     rating: 4,
     avatar: require("@/assets/images/9.jpg"),
-    availabilityStatus: "onWork",
+    availabilityStatus: "busy", // Changed for demo
   },
   {
     id: "demo-3",
@@ -68,7 +68,7 @@ const DEMO_PROFILES: Profile[] = [
     languages: ["English", "Hindi"],
     rating: 5,
     avatar: require("@/assets/images/12.png"),
-    availabilityStatus: "onWork",
+    availabilityStatus: "offWork", // Changed for demo
   },
   {
     id: "demo-4",
@@ -151,6 +151,34 @@ const cardVariants = {
   },
 };
 
+/* ---------------- helper ---------------- */
+
+const getStatusDetails = (status: string) => {
+  switch (status) {
+    case "onWork":
+      return {
+        label: "Online",
+        dotColor: "bg-emerald-500",
+        shadowColor: "shadow-emerald-500/50",
+        isDisabled: false,
+      };
+    case "busy":
+      return {
+        label: "Busy",
+        dotColor: "bg-red-500",
+        shadowColor: "shadow-red-500/50",
+        isDisabled: true,
+      };
+    default: // offWork or anything else
+      return {
+        label: "Offline",
+        dotColor: "bg-zinc-500",
+        shadowColor: "shadow-zinc-500/50",
+        isDisabled: true,
+      };
+  }
+};
+
 /* ---------------- component ---------------- */
 
 export default function TopIndividuals() {
@@ -169,14 +197,12 @@ export default function TopIndividuals() {
     const fetchData = async () => {
       setIsLoading(true);
 
-      // NOT LOGGED IN → SHOW DEMO DATA
       if (!isAuthenticated) {
         setProfiles(DEMO_PROFILES);
         setIsLoading(false);
         return;
       }
 
-      // LOGGED IN → REAL API
       try {
         const token = getToken();
         const res = await axios.get(`${API_BASE_URL}/customer/quickconnect`, {
@@ -193,6 +219,7 @@ export default function TopIndividuals() {
               age: c.age || null,
               gender: c.gender || null,
               languages: c.languages || [],
+              profession: c.profession || "Expert",
               rating: c.ratingAverage || 0,
               avatar: c.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
               availabilityStatus: c.availabilityStatus || "offWork",
@@ -266,55 +293,97 @@ export default function TopIndividuals() {
         >
           {isLoading
             ? [...Array(4)].map((_, i) => <SkeletonCard key={i} />)
-            : profiles.map((p) => (
-                <motion.div
-                  key={p.id}
-                  variants={cardVariants}
-                  whileHover={{ y: -6, scale: 1.02 }}
-                  className="relative h-[420px] overflow-hidden rounded-3xl border border-white/10 bg-black/40"
-                >
-                  {/* Image */}
-                  <Image src={p.avatar} alt={p.name} fill className="object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+            : profiles.map((p) => {
+                
+                // --- GET STATUS CONFIGURATION ---
+                const { label, dotColor, shadowColor, isDisabled } = getStatusDetails(p.availabilityStatus);
 
-                  {/* Actions ONLY when logged in */}
-                  {isAuthenticated && (
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3">
-                      <button onClick={() => handleCall(p, "voice")} className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center">
-                        <IoCallOutline className="text-green-500" />
-                      </button>
-                      <button onClick={() => handleChat(p)} className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center">
-                        <IoChatbubbleOutline className="text-green-500" />
-                      </button>
-                      <button onClick={() => handleCall(p, "video")} className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center">
-                        <IoVideocamOutline className="text-green-500" />
-                      </button>
+                return (
+                  <motion.div
+                    key={p.id}
+                    variants={cardVariants}
+                    whileHover={{ y: -6, scale: 1.02 }}
+                    className="relative h-[420px] overflow-hidden rounded-3xl border border-white/10 bg-black/40 group"
+                  >
+                    {/* Image (No longer fades when disabled) */}
+                    <Image src={p.avatar} alt={p.name} fill className="object-cover transition-all duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+                    {/* --- STATUS BADGE (Top Left) --- */}
+                    <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10">
+                        <div className={`w-2 h-2 rounded-full ${dotColor} shadow-[0_0_8px] ${shadowColor}`} />
+                        <span className="text-white/90 text-[11px] uppercase font-bold tracking-wider">{label}</span>
                     </div>
-                  )}
 
-                  {/* Bottom content */}
-                  <div className="absolute bottom-0 left-0 z-10 p-5">
-                    <h5 className="text-white text-lg font-semibold">{p.name}</h5>
+                    {/* Actions ONLY when logged in */}
+                    {isAuthenticated && (
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3">
+                        
+                        {/* Voice Call */}
+                        <button 
+                            onClick={() => !isDisabled && handleCall(p, "voice")} 
+                            disabled={isDisabled}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center bg-black/40 text-green-500 transition-all duration-300 ${
+                                isDisabled 
+                                ? "cursor-not-allowed" 
+                                : "hover:bg-white hover:text-black hover:scale-110"
+                            }`}
+                        >
+                          <IoCallOutline />
+                        </button>
 
-                    {/* ❌ Age & Gender REMOVED FOR PG */}
-                    <p className="text-white/70 text-sm">Verified Listener</p>
+                        {/* Chat */}
+                        <button 
+                            onClick={() => !isDisabled && handleChat(p)} 
+                            disabled={isDisabled}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center bg-black/40 text-green-500 transition-all duration-300 ${
+                                isDisabled 
+                                ? "cursor-not-allowed" 
+                                : "hover:bg-white hover:text-black hover:scale-110"
+                            }`}
+                        >
+                          <IoChatbubbleOutline />
+                        </button>
 
-                    <p className="text-white/60 text-xs mt-1">
-                      Conversation Support Partner
-                    </p>
+                        {/* Video Call */}
+                        <button 
+                            onClick={() => !isDisabled && handleCall(p, "video")} 
+                            disabled={isDisabled}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center bg-black/40 text-green-500 transition-all duration-300 ${
+                                isDisabled 
+                                ? "cursor-not-allowed" 
+                                : "hover:bg-white hover:text-black hover:scale-110"
+                            }`}
+                        >
+                          <IoVideocamOutline />
+                        </button>
 
-                    <div className="flex gap-1 mt-2">
-                      {Array.from({ length: 5 }).map((_, i) =>
-                        i < Math.round(p.rating) ? (
-                          <IoStar key={i} className="text-sm text-gray-400" />
-                        ) : (
-                          <IoStarOutline key={i} className="text-sm text-white/40" />
-                        )
-                      )}
+                      </div>
+                    )}
+
+                    {/* Bottom content */}
+                    <div className="absolute bottom-0 left-0 z-10 p-5 w-full">
+                      <h5 className="text-white text-lg font-semibold">{p.name}</h5>
+
+                      <p className="text-white/70 text-sm">Verified Listener</p>
+
+                      <p className="text-white/60 text-xs mt-1 truncate">
+                        {p.profession || "Conversation Partner"}
+                      </p>
+
+                      <div className="flex gap-1 mt-2">
+                        {Array.from({ length: 5 }).map((_, i) =>
+                          i < Math.round(p.rating) ? (
+                            <IoStar key={i} className="text-sm text-yellow-400" />
+                          ) : (
+                            <IoStarOutline key={i} className="text-sm text-white/40" />
+                          )
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+            })}
         </motion.div>
 
         {/* CTA */}
