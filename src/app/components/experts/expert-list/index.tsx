@@ -374,16 +374,37 @@ export default function ExpertsList() {
     router.push(`/chat/new?${params.toString()}`);
   };
 
-  const displayedData = useMemo(() => {
-    if (tab === "following") return consultants;
-    if (!search.trim()) return consultants;
-    const q = search.trim().toLowerCase();
-    return consultants.filter(
-      (c) =>
-        (c.name || "").toLowerCase().includes(q) ||
-        (c.languages || []).join(" ").toLowerCase().includes(q)
-    );
-  }, [tab, consultants, search]);
+const displayedData = useMemo(() => {
+  let data = [];
+
+  if (tab === "following") {
+    data = [...consultants];
+  } else {
+    if (!search.trim()) {
+      data = [...consultants];
+    } else {
+      const q = search.trim().toLowerCase();
+      data = consultants.filter(
+        (c) =>
+          (c.name || "").toLowerCase().includes(q) ||
+          (c.languages || []).join(" ").toLowerCase().includes(q)
+      );
+    }
+  }
+
+  // ✅ NEW: Sort so that "onWork" appears first
+  data.sort((a, b) => {
+    const order = { onWork: 0, busy: 1, offWork: 2 };
+
+    const aStatus = a.availabilityStatus || "offWork";
+    const bStatus = b.availabilityStatus || "offWork";
+
+    return order[aStatus] - order[bStatus];
+  });
+
+  return data;
+}, [tab, consultants, search]);
+
 
   return (
     <section

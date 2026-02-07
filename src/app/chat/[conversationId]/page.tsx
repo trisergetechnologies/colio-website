@@ -16,7 +16,7 @@ import { useChat } from '@/context/ChatContext';
 import { useCall } from '@/context/CallContext';
 import { useAuth } from '@/context/AuthContext';
 
-// --- NEW ICONS ---
+// --- ICONS ---
 const PhoneIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -209,46 +209,57 @@ export default function ChatConversationPage() {
       : 'bg-gray-400';
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-[#0b0b0b] to-[#141414]">
-      {/* HEADER */}
-      <header className="sticky top-0 z-20 backdrop-blur-xl bg-black/60 border-b border-white/10">
-        <div className="flex items-center gap-3 px-4 py-3 max-w-4xl mx-auto">
-          <button onClick={() => router.back()} className="text-xl text-white">
-            ←
-          </button>
+    // FIX: Use fixed inset-0 and h-[100dvh] to lock viewport and prevent keyboard jiggle
+    <div className="fixed inset-0 h-[100dvh] w-full flex flex-col bg-gradient-to-br from-[#0b0b0b] to-[#141414] overflow-hidden">
+      
+      {/* HEADER - Removed sticky, now just part of the flex column */}
+      <header className="shrink-0 z-20 backdrop-blur-xl bg-black/60 border-b border-white/10">
+        <div className="flex items-center justify-between px-4 py-3 max-w-4xl mx-auto">
+          
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {/* Back Button */}
+            <button 
+              onClick={() => router.back()} 
+              className="text-xl text-white shrink-0 p-1 hover:bg-white/10 rounded-full transition-colors"
+            >
+              ←
+            </button>
 
-          <div
-            onClick={() => router.push(`/experts/${participantId}`)}
-            className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
-          >
-            <div className="relative">
-              <Image
-                src={
-                  participantAvatar ||
-                  'https://cdn-icons-png.flaticon.com/512/149/149071.png'
-                }
-                alt=""
-                width={42}
-                height={42}
-                className="rounded-full"
-              />
-              <span
-                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-black ${getStatusColor()}`}
-              />
-            </div>
-            <div className="min-w-0">
-              <p className="text-white font-semibold truncate">
-                {participantName}
-              </p>
-              <p className="text-xs text-white/50 capitalize">
-                {availabilityStatus}
-              </p>
+            {/* User Profile */}
+            <div
+              onClick={() => router.push(`/experts/${participantId}`)}
+              className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer group"
+            >
+              {/* FIX: Wrapper div to enforce circle shape and prevent squash */}
+              <div className="relative w-[42px] h-[42px] shrink-0">
+                <Image
+                  src={
+                    participantAvatar ||
+                    'https://cdn-icons-png.flaticon.com/512/149/149071.png'
+                  }
+                  alt=""
+                  fill
+                  sizes="42px"
+                  className="rounded-full object-cover border border-white/10"
+                />
+                <span
+                  className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-black ${getStatusColor()}`}
+                />
+              </div>
+              
+              <div className="min-w-0 flex-1">
+                <p className="text-white font-semibold truncate group-hover:text-pink-500 transition-colors">
+                  {participantName}
+                </p>
+                <p className="text-xs text-white/50 capitalize truncate">
+                  {availabilityStatus}
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* --- NEW BUTTON SECTION START --- */}
-          <div className="flex items-center gap-3">
-            {/* Audio Call Button (Clean & Simple) */}
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3 shrink-0 ml-2">
             <button
               onClick={() =>
                 initiateCall(
@@ -258,13 +269,12 @@ export default function ChatConversationPage() {
                   participantAvatar
                 )
               }
-              className="p-3 rounded-full bg-white/5 text-white/70 hover:text-white hover:bg-white/15 transition-all duration-200 border border-white/5"
+              className="p-3 rounded-full bg-white/5 text-white/70 hover:text-white hover:bg-white/15 transition-all duration-200 border border-white/5 shrink-0"
               title="Voice Call"
             >
               <PhoneIcon />
             </button>
 
-            {/* Video Call Button (Magic Pop Animation) */}
             <button
               onClick={() =>
                 initiateCall(
@@ -274,34 +284,30 @@ export default function ChatConversationPage() {
                   participantAvatar
                 )
               }
-              className="relative group p-3 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-[0_0_15px_rgba(236,72,153,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] hover:scale-110 transition-all duration-300"
+              className="relative group p-3 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-[0_0_15px_rgba(236,72,153,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] hover:scale-110 transition-all duration-300 shrink-0"
               title="Video Call"
             >
-              {/* Radar/Ping Effect for "Noticability" */}
               <span className="absolute -inset-1 rounded-full bg-pink-500 opacity-30 animate-ping group-hover:opacity-50"></span>
-              
-              {/* Icon Container (Keeps icon stable above animation) */}
               <span className="relative z-10 block animate-[bounce_2s_infinite]">
                  <VideoIcon />
               </span>
             </button>
           </div>
-          {/* --- NEW BUTTON SECTION END --- */}
         </div>
       </header>
 
-      {/* MESSAGES */}
+      {/* MESSAGES - Scrollable Area */}
       <main
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto px-3 py-4"
+        className="flex-1 overflow-y-auto px-3 py-4 w-full overscroll-contain"
       >
-        <div className="max-w-4xl mx-auto space-y-3">
+        <div className="max-w-4xl mx-auto space-y-3 pb-4">
           {messages.map(msg => {
             const own = isOwnMessage(msg);
             if (msg.messageType === 'call_log') {
               return (
-                <div key={msg._id} className="flex justify-center">
-                  <div className="text-xs px-4 py-2 rounded-full bg-white/10 text-white/60 flex items-center gap-2">
+                <div key={msg._id} className="flex justify-center my-4">
+                  <div className="text-xs px-4 py-2 rounded-full bg-white/10 text-white/60 flex items-center gap-2 backdrop-blur-sm border border-white/5">
                     <PhoneIcon /> {msg.content}
                   </div>
                 </div>
@@ -313,7 +319,7 @@ export default function ChatConversationPage() {
                 className={`flex ${own ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[85%] sm:max-w-[70%] px-4 py-2 rounded-2xl text-sm ${
+                  className={`max-w-[85%] sm:max-w-[70%] px-4 py-2 rounded-2xl text-sm break-words shadow-sm ${
                     own
                       ? 'bg-pink-500 text-white rounded-br-md'
                       : 'bg-white/15 text-white rounded-bl-md'
@@ -328,20 +334,22 @@ export default function ChatConversationPage() {
         </div>
       </main>
 
-      {/* INPUT */}
-      <footer className="sticky bottom-0 bg-black/70 backdrop-blur-xl border-t border-white/10 px-3 py-3">
+      {/* INPUT - Fixed at bottom of flex column */}
+      <footer className="shrink-0 bg-black/70 backdrop-blur-xl border-t border-white/10 px-3 py-3 w-full">
         <div className="flex gap-2 max-w-4xl mx-auto">
           <input
             value={inputText}
             onChange={e => setInputText(e.target.value)}
             onKeyPress={e => e.key === 'Enter' && handleSend()}
             placeholder="Type a message…"
-            className="flex-1 rounded-full bg-white/10 px-5 py-3 text-white outline-none focus:bg-white/15 transition-colors"
+            // FIX: Prevent iOS zoom on focus by ensuring font size is adequate (16px usually prevents zoom)
+            // or by meta tag (handled in layout usually), here we ensure input styling is robust
+            className="flex-1 min-w-0 rounded-full bg-white/10 px-5 py-3 text-white outline-none focus:bg-white/15 transition-colors placeholder:text-white/30"
           />
           <button
             onClick={handleSend}
             disabled={!inputText.trim()}
-            className="w-12 h-12 rounded-full bg-pink-500 text-white flex items-center justify-center hover:bg-pink-600 transition-colors disabled:opacity-50 disabled:hover:bg-pink-500"
+            className="w-12 h-12 shrink-0 rounded-full bg-pink-500 text-white flex items-center justify-center hover:bg-pink-600 transition-colors disabled:opacity-50 disabled:hover:bg-pink-500 shadow-lg shadow-pink-500/20"
           >
             ➤
           </button>

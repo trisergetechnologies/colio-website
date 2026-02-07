@@ -95,9 +95,7 @@ export default function ChatListPage() {
     const msg = conv.lastMessage;
     if (!msg?.content) return 'No messages yet';
     if (msg.messageType === 'call_log') return `📞 ${msg.content}`;
-    return msg.content.length > 35
-      ? msg.content.substring(0, 35) + '...'
-      : msg.content;
+    return msg.content; // Truncation handled by CSS now
   };
 
   // Availability color
@@ -148,18 +146,18 @@ export default function ChatListPage() {
   return (
     <div className="min-h-screen bg-[#0F0F0F]">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-gradient-to-b from-black/90 to-transparent backdrop-blur-md px-6 py-5">
+      <div className="sticky top-0 z-10 bg-gradient-to-b from-black/90 to-transparent backdrop-blur-md px-4 sm:px-6 py-5">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           {/* Left */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
-              className="p-2 rounded-full hover:bg-white/10 transition-colors"
+              className="p-2 rounded-full hover:bg-white/10 transition-colors shrink-0"
               aria-label="Go back"
             >
               <span className="text-xl text-white">←</span>
             </button>
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-2xl font-bold text-white truncate">
               Messages
             </h1>
           </div>
@@ -168,11 +166,11 @@ export default function ChatListPage() {
           <button
             onClick={() => fetchConversations(true)}
             disabled={isRefreshing}
-            className="p-2 rounded-full hover:bg-white/10 transition-colors"
+            className="p-2 rounded-full hover:bg-white/10 transition-colors shrink-0"
             aria-label="Refresh"
           >
             <span
-              className={`text-xl ${
+              className={`text-xl block ${
                 isRefreshing ? 'animate-spin' : ''
               }`}
             >
@@ -183,17 +181,17 @@ export default function ChatListPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-3xl mx-auto px-4 pb-24">
+      <div className="max-w-3xl mx-auto px-2 sm:px-4 pb-24">
         {isLoading ? (
           // Loading skeleton
-          <div className="space-y-4 mt-4">
+          <div className="space-y-4 mt-4 px-2">
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
                 className="flex items-center gap-4 p-4 animate-pulse"
               >
-                <div className="w-14 h-14 rounded-full bg-white/10" />
-                <div className="flex-1 space-y-2">
+                <div className="w-14 h-14 rounded-full bg-white/10 shrink-0" />
+                <div className="flex-1 space-y-2 min-w-0">
                   <div className="h-4 w-32 bg-white/10 rounded" />
                   <div className="h-3 w-48 bg-white/10 rounded" />
                 </div>
@@ -227,30 +225,30 @@ export default function ChatListPage() {
                 <div
                   key={conv.id}
                   onClick={() => openConversation(conv)}
-                  className="flex items-center gap-4 py-4 px-2 cursor-pointer hover:bg-white/5 rounded-xl transition-colors group"
+                  className="flex items-center gap-3 sm:gap-4 py-4 px-2 cursor-pointer hover:bg-white/5 rounded-xl transition-colors group"
                 >
-                  {/* Avatar */}
-                  <div className="relative shrink-0">
+                  {/* Avatar - Rigid Wrapper to prevent oval shape */}
+                  <div className="relative shrink-0 w-14 h-14">
                     <Image
                       src={
                         conv.participant.avatar ||
                         'https://cdn-icons-png.flaticon.com/512/149/149071.png'
                       }
                       alt={conv.participant.name}
-                      width={56}
-                      height={56}
-                      className="rounded-full object-cover bg-white/10"
+                      fill
+                      sizes="56px"
+                      className="rounded-full object-cover bg-white/10 border border-white/5"
                     />
                     <span
-                      className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-[#0F0F0F] ${getStatusColor(
+                      className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-[#0F0F0F] ${getStatusColor(
                         conv.participant.availabilityStatus
                       )}`}
                     />
                   </div>
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
+                  {/* Content - min-w-0 ensures truncation works */}
+                  <div className="flex-1 min-w-0 grid gap-0.5">
+                    <div className="flex items-center justify-between gap-2">
                       <span
                         className={`text-white truncate ${
                           hasUnread
@@ -261,7 +259,7 @@ export default function ChatListPage() {
                         {conv.participant.name}
                       </span>
                       <span
-                        className={`text-xs ${
+                        className={`text-xs shrink-0 whitespace-nowrap ${
                           hasUnread
                             ? 'text-pink-500'
                             : 'text-white/50'
@@ -272,7 +270,8 @@ export default function ChatListPage() {
                         )}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between">
+                    
+                    <div className="flex items-center justify-between gap-2">
                       <span
                         className={`text-sm truncate ${
                           hasUnread
@@ -283,7 +282,7 @@ export default function ChatListPage() {
                         {getPreview(conv)}
                       </span>
                       {hasUnread && (
-                        <span className="ml-2 px-2 py-0.5 text-xs font-bold text-white bg-pink-500 rounded-full">
+                        <span className="shrink-0 px-2 py-0.5 text-xs font-bold text-white bg-pink-500 rounded-full">
                           {conv.unreadCount > 99
                             ? '99+'
                             : conv.unreadCount}
@@ -292,32 +291,28 @@ export default function ChatListPage() {
                     </div>
                   </div>
 
-                  {/* Call buttons - ALWAYS VISIBLE */}
-                  {/* Added shrink-0 to prevent buttons from squashing */}
-                  <div className="flex items-center gap-3 pl-2 shrink-0">
+                  {/* Call buttons - Prevent shrinking */}
+                  <div className="flex items-center gap-2 sm:gap-3 pl-1 shrink-0">
                     
                     {/* Audio Call Button */}
                     <button
                       onClick={(e) => handleVoiceCall(e, conv)}
-                      className="p-2.5 rounded-full bg-white/5 text-white/70 hover:text-white hover:bg-white/15 transition-all duration-200 border border-white/5"
+                      className="p-2.5 rounded-full bg-white/5 text-white/70 hover:text-white hover:bg-white/15 transition-all duration-200 border border-white/5 shrink-0"
                       title="Voice Call"
                     >
                       <PhoneIcon />
                     </button>
 
-                    {/* Video Call Button with Magic Pop Animation */}
+                    {/* Video Call Button */}
                     <button
                       onClick={(e) => handleVideoCall(e, conv)}
-                      className="relative group/btn p-2.5 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-[0_0_15px_rgba(236,72,153,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] hover:scale-110 transition-all duration-300"
+                      className="relative group/btn p-2.5 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-[0_0_15px_rgba(236,72,153,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] hover:scale-110 transition-all duration-300 shrink-0"
                       title="Video Call"
                     >
-                        {/* Radar/Ping Effect */}
-                        <span className="absolute -inset-1 rounded-full bg-pink-500 opacity-30 animate-ping group-hover/btn:opacity-50"></span>
-                        
-                        {/* Icon Container */}
-                        <span className="relative z-10 block animate-[bounce_2s_infinite]">
-                            <VideoIcon />
-                        </span>
+                      <span className="absolute -inset-1 rounded-full bg-pink-500 opacity-30 animate-ping group-hover/btn:opacity-50"></span>
+                      <span className="relative z-10 block animate-[bounce_2s_infinite]">
+                          <VideoIcon />
+                      </span>
                     </button>
                   </div>
                 </div>

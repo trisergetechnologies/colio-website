@@ -96,21 +96,7 @@ export default function Banner() {
               Start Conversation
             </motion.a>
 
-            <div className="flex flex-wrap justify-center lg:justify-start gap-6">
-              <motion.a
-                onClick={() =>
-                  window.dispatchEvent(new Event("open-listener-match"))
-                }
-                whileHover={{ scale: 1.07 }}
-                whileTap={{ scale: 0.97 }}
-                className="text-lg font-semibold text-white py-3 px-12 rounded-2xl shadow-lg transition-all"
-                style={{
-                  background: `linear-gradient(90deg, ${colors.button.start}, ${colors.button.end})`,
-                }}
-              >
-                Find a Listener
-              </motion.a>
-            </div>
+            
           </div>
 
           {/* Compliance Disclaimer */}

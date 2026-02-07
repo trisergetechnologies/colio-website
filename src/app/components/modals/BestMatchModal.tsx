@@ -22,9 +22,9 @@ type Consultant = {
   bio?: string;
   languages?: string[];
   ratePerMinute?: number;
-  ratingAverage?: number;
-  ratingCount?: number;
-  totalSessions?: number;
+  // ratingAverage?: number;
+  // ratingCount?: number;
+  // totalSessions?: number;
   availabilityStatus?: "onWork" | "offWork" | "busy";
   experienceMonths?: number;
 };
@@ -355,13 +355,13 @@ export default function BestMatchModal({ open, onClose }: Props) {
             )}
 
             <div className="flex items-center gap-4 mt-3 text-sm">
-              <div className="flex items-center gap-1">
+              {/* <div className="flex items-center gap-1">
                 <Star className="text-yellow-400 fill-yellow-400" size={16} />
                 <span>{consultant.ratingAverage?.toFixed(1) || "0.0"}</span>
-              </div>
-              <span className="text-white/70">
+              </div> */}
+              {/* <span className="text-white/70">
                 {consultant.totalSessions || 0}+ sessions
-              </span>
+              </span> */}
               {consultant.languages && consultant.languages.length > 0 && (
                 <span className="text-white/70">
                   {consultant.languages.join(", ")}
