@@ -103,17 +103,17 @@ const cardVariants = {
 
 const calculateAge = (dateOfBirth: string | null | undefined): number | null => {
   if (!dateOfBirth) return null;
-  
+
   try {
     const dob = new Date(dateOfBirth);
     const today = new Date();
     let age = today.getFullYear() - dob.getFullYear();
     const monthDiff = today.getMonth() - dob.getMonth();
-    
+
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
       age--;
     }
-    
+
     return age > 0 && age < 120 ? age : null;
   } catch (error) {
     return null;
@@ -216,11 +216,17 @@ export default function ExpertsList() {
               dateOfBirth: c.dateOfBirth || c.dob || null,
             })) as Consultant[];
 
-            if (append) {
-              setConsultants((prev) => [...prev, ...normalized]);
-            } else {
-              setConsultants(normalized);
-            }
+            setConsultants((prev) => {
+              const combined = append ? [...prev, ...normalized] : normalized;
+
+              const order = { onWork: 0, busy: 1, offWork: 2 };
+
+              return combined.sort(
+                (a, b) =>
+                  order[a.availabilityStatus || "offWork"] -
+                  order[b.availabilityStatus || "offWork"]
+              );
+            });
 
             const meta = res.data.data?.meta || res.data.meta || null;
             const metaHasMore =
@@ -374,36 +380,36 @@ export default function ExpertsList() {
     router.push(`/chat/new?${params.toString()}`);
   };
 
-const displayedData = useMemo(() => {
-  let data = [];
+  const displayedData = useMemo(() => {
+    let data = [];
 
-  if (tab === "following") {
-    data = [...consultants];
-  } else {
-    if (!search.trim()) {
+    if (tab === "following") {
       data = [...consultants];
     } else {
-      const q = search.trim().toLowerCase();
-      data = consultants.filter(
-        (c) =>
-          (c.name || "").toLowerCase().includes(q) ||
-          (c.languages || []).join(" ").toLowerCase().includes(q)
-      );
+      if (!search.trim()) {
+        data = [...consultants];
+      } else {
+        const q = search.trim().toLowerCase();
+        data = consultants.filter(
+          (c) =>
+            (c.name || "").toLowerCase().includes(q) ||
+            (c.languages || []).join(" ").toLowerCase().includes(q)
+        );
+      }
     }
-  }
 
-  // ✅ NEW: Sort so that "onWork" appears first
-  data.sort((a, b) => {
-    const order = { onWork: 0, busy: 1, offWork: 2 };
+    // ✅ NEW: Sort so that "onWork" appears first
+    data.sort((a, b) => {
+      const order = { onWork: 0, busy: 1, offWork: 2 };
 
-    const aStatus = a.availabilityStatus || "offWork";
-    const bStatus = b.availabilityStatus || "offWork";
+      const aStatus = a.availabilityStatus || "offWork";
+      const bStatus = b.availabilityStatus || "offWork";
 
-    return order[aStatus] - order[bStatus];
-  });
+      return order[aStatus] - order[bStatus];
+    });
 
-  return data;
-}, [tab, consultants, search]);
+    return data;
+  }, [tab, consultants, search]);
 
 
   return (
@@ -426,7 +432,7 @@ const displayedData = useMemo(() => {
         <div className="mb-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
             <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-          Listeners
+              Listeners
             </h2>
             <p className="text-white/60 mt-2 text-base">
               Connect with Our Listeners — voice, video or chat
@@ -449,21 +455,19 @@ const displayedData = useMemo(() => {
             <div className="flex rounded-2xl overflow-hidden border border-white/[0.08] bg-white/[0.02]">
               <button
                 onClick={() => setTab("recommended")}
-                className={`px-5 py-3 text-sm font-medium transition-all duration-300 ${
-                  tab === "recommended"
+                className={`px-5 py-3 text-sm font-medium transition-all duration-300 ${tab === "recommended"
                     ? "bg-gradient-to-r from-pink-600 to-pink-500 text-white"
                     : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-                }`}
+                  }`}
               >
                 Recommended
               </button>
               <button
                 onClick={() => setTab("following")}
-                className={`px-5 py-3 text-sm font-medium transition-all duration-300 ${
-                  tab === "following"
+                className={`px-5 py-3 text-sm font-medium transition-all duration-300 ${tab === "following"
                     ? "bg-gradient-to-r from-pink-600 to-pink-500 text-white"
                     : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-                }`}
+                  }`}
               >
                 Following
               </button>
@@ -574,13 +578,12 @@ const displayedData = useMemo(() => {
                         </div>
                         {/* Online/Busy indicator */}
                         <div
-                          className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-[3px] border-[#0d0d0f] ${
-                            isOnline
+                          className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-[3px] border-[#0d0d0f] ${isOnline
                               ? "bg-emerald-500 shadow-lg shadow-emerald-500/50"
                               : isBusy
                                 ? "bg-amber-500 shadow-lg shadow-amber-500/50"
                                 : "bg-zinc-600"
-                          }`}
+                            }`}
                         />
                       </div>
 
@@ -601,22 +604,20 @@ const displayedData = useMemo(() => {
                         {/* Status badge */}
                         <div className="mt-2">
                           <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                              isOnline
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${isOnline
                                 ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
                                 : isBusy
                                   ? "bg-amber-500/15 text-amber-400 border border-amber-500/20"
                                   : "bg-white/[0.06] text-white/50 border border-white/[0.08]"
-                            }`}
+                              }`}
                           >
                             <span
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                isOnline
+                              className={`w-1.5 h-1.5 rounded-full ${isOnline
                                   ? "bg-emerald-400"
                                   : isBusy
                                     ? "bg-amber-400"
                                     : "bg-white/40"
-                              }`}
+                                }`}
                             />
                             {isOnline
                               ? "Available"
@@ -635,11 +636,10 @@ const displayedData = useMemo(() => {
                             e.stopPropagation();
                             toggleFollow(id);
                           }}
-                          className={`p-2 rounded-xl transition-all duration-200 ${
-                            isFav
+                          className={`p-2 rounded-xl transition-all duration-200 ${isFav
                               ? "bg-pink-500/20 text-pink-400 hover:bg-pink-500/30"
                               : "bg-white/[0.04] text-white/40 hover:bg-white/[0.08] hover:text-white/70"
-                          }`}
+                            }`}
                           title={isFav ? "Unfollow" : "Follow"}
                         >
                           {isFav ? (
@@ -707,11 +707,10 @@ const displayedData = useMemo(() => {
                           if (!isDisabled) handleVoiceCall(c);
                         }}
                         disabled={isDisabled}
-                        className={`group/btn relative flex-1 max-w-[140px] flex items-center justify-center gap-2 py-3 px-3 rounded-xl overflow-hidden transition-all duration-300 ${
-                          isDisabled 
-                            ? 'cursor-not-allowed' 
+                        className={`group/btn relative flex-1 max-w-[140px] flex items-center justify-center gap-2 py-3 px-3 rounded-xl overflow-hidden transition-all duration-300 ${isDisabled
+                            ? 'cursor-not-allowed'
                             : 'hover:scale-[1.03] active:scale-[0.97]'
-                        }`}
+                          }`}
                         title={isDisabled ? "Currently Unavailable" : "Voice Call"}
                       >
                         {/* Animated pulsing glow */}
@@ -739,11 +738,10 @@ const displayedData = useMemo(() => {
                           if (!isDisabled) startChat(c);
                         }}
                         disabled={isDisabled}
-                        className={`group/btn relative flex items-center justify-center p-3 rounded-xl overflow-hidden transition-all duration-300 ${
-                          isDisabled 
-                            ? 'cursor-not-allowed' 
+                        className={`group/btn relative flex items-center justify-center p-3 rounded-xl overflow-hidden transition-all duration-300 ${isDisabled
+                            ? 'cursor-not-allowed'
                             : 'hover:scale-[1.08] active:scale-[0.95]'
-                        }`}
+                          }`}
                         title={isDisabled ? "Currently Unavailable" : "Chat"}
                       >
                         {/* Subtle pulsing glow */}
@@ -765,11 +763,10 @@ const displayedData = useMemo(() => {
                           if (!isDisabled) handleVideoCall(c);
                         }}
                         disabled={isDisabled}
-                        className={`group/btn relative flex-1 max-w-[140px] flex items-center justify-center gap-2 py-3 px-3 rounded-xl overflow-hidden transition-all duration-300 ${
-                          isDisabled 
-                            ? 'cursor-not-allowed' 
+                        className={`group/btn relative flex-1 max-w-[140px] flex items-center justify-center gap-2 py-3 px-3 rounded-xl overflow-hidden transition-all duration-300 ${isDisabled
+                            ? 'cursor-not-allowed'
                             : 'hover:scale-[1.03] active:scale-[0.97]'
-                        }`}
+                          }`}
                         title={isDisabled ? "Currently Unavailable" : "Video Call"}
                       >
                         {/* Animated pulsing glow */}
