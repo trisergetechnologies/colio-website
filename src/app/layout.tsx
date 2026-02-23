@@ -24,20 +24,24 @@ export default function RootLayout({
     <html lang='en' suppressHydrationWarning>
       
       <head>
-        {/* Google Tag */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-MMP5LBSGSP"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-MMP5LBSGSP');
-          `}
-        </Script>
-      </head>
+
+  <Script
+    src="https://www.googletagmanager.com/gtag/js?id=G-MMP5LBSGSP"
+    strategy="afterInteractive"
+  />
+
+  <Script id="google-tag" strategy="afterInteractive">
+  {`
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-MMP5LBSGSP');
+    gtag('config', 'AW-17942775177');
+  `}
+  </Script>
+
+</head>
 
       <body className={`${font.className}`}>
         <AuthProvider>
