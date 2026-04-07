@@ -5,6 +5,7 @@ import {
   LISTENER_CATEGORIES_UI,
   type ListenerCategoryId,
 } from "@/constants/consultants";
+import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { HiOutlineArrowRight } from "react-icons/hi2";
@@ -23,8 +24,9 @@ export default function ListenerCategories() {
       }}
     >
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[20%] right-[10%] w-[420px] h-[420px] bg-[radial-gradient(circle,rgba(168,85,247,0.1),transparent_70%)] blur-3xl" />
+        <div className="absolute top-[20%] right-[10%] w-[420px] h-[420px] bg-[radial-gradient(circle,rgba(168,85,247,0.12),transparent_70%)] blur-3xl" />
         <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[length:100%_56px] opacity-20" />
+        <div className="absolute -top-20 left-[8%] w-[280px] h-[280px] bg-[radial-gradient(circle,rgba(244,114,182,0.14),transparent_70%)] blur-3xl" />
       </div>
 
       <div className="container relative z-10 max-w-6xl mx-auto px-4">
@@ -42,48 +44,75 @@ export default function ListenerCategories() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
           {LISTENER_CATEGORIES_UI.map((item, i) => (
             <motion.div
               key={item.id}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 22, scale: 0.97 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.45, delay: i * 0.05 }}
+              transition={{ duration: 0.5, delay: i * 0.06 }}
+              className="group h-full"
             >
-              <Link
-                href={expertsHref(item.id)}
-                className={`
-                  group flex flex-col h-full rounded-2xl border border-white/[0.08]
-                  ${item.cardTint}
-                  backdrop-blur-sm
-                  pl-4 pr-5 py-5 md:py-6
-                  border-l-[3px] ${item.borderAccent}
-                  hover:border-white/[0.16] hover:bg-white/[0.05]
-                  transition-all duration-250
-                  shadow-[0_1px_0_rgba(255,255,255,0.03)_inset]
-                `}
+              {/* Gradient frame (glassmorphism + bold border) */}
+              <div
+                className={`relative h-full rounded-2xl p-px bg-gradient-to-br ${item.gradientBorder} shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset,0_22px_50px_-28px_rgba(0,0,0,0.85)] transition-all duration-300 group-hover:shadow-[0_0_0_1px_rgba(255,255,255,0.12)_inset,0_28px_60px_-24px_rgba(217,70,239,0.18)] group-hover:-translate-y-1`}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h3 className="text-lg font-semibold text-white tracking-tight leading-tight">
-                      {item.id}
-                    </h3>
-                    <p className="mt-2 text-sm text-white/60 leading-relaxed line-clamp-3">
-                      {item.blurb}
-                    </p>
+                <Link
+                  href={expertsHref(item.id)}
+                  className={`
+                    relative flex h-full flex-col overflow-hidden rounded-[15px]
+                    border border-white/[0.06] ${item.cardTint}
+                    bg-zinc-950/75 backdrop-blur-xl
+                    px-5 py-5 md:px-6 md:py-6
+                    transition-colors duration-300
+                    group-hover:bg-zinc-950/65
+                  `}
+                >
+                  {/* Sheen */}
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.07] via-transparent to-transparent opacity-60" />
+                  <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-white/10 blur-3xl opacity-30 transition-opacity duration-300 group-hover:opacity-50" />
+
+                  <div className="relative flex items-start justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-2 flex items-start gap-3">
+                        <span
+                          className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${item.gradientBorder} text-white shadow-lg shadow-black/30 ring-1 ring-white/20`}
+                          aria-hidden
+                        >
+                          <Icon icon={item.icon} className="h-5 w-5" />
+                        </span>
+                        <div className="min-w-0 pt-0.5">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-white/45">
+                            Listener topic
+                          </p>
+                          <h3 className="text-lg font-semibold text-white tracking-tight leading-tight">
+                            {item.id}
+                          </h3>
+                        </div>
+                      </div>
+                      <p className="mt-2 text-sm text-white/60 leading-relaxed line-clamp-3">
+                        {item.blurb}
+                      </p>
+                    </div>
+                    <span
+                      className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/[0.06] text-white/70 backdrop-blur-sm transition-all duration-300 group-hover:border-white/30 group-hover:bg-white/10 group-hover:text-white"
+                      aria-hidden
+                    >
+                      <HiOutlineArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                    </span>
                   </div>
-                  <span
-                    className="mt-1 shrink-0 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-black/20 text-white/50 group-hover:text-white group-hover:border-white/20 transition-colors"
-                    aria-hidden
-                  >
-                    <HiOutlineArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                  </span>
-                </div>
-                <span className="mt-4 text-xs font-medium text-white/45 group-hover:text-white/65 transition-colors">
-                  View listeners →
-                </span>
-              </Link>
+
+                  <div className="relative mt-5 flex items-center justify-between border-t border-white/[0.08] pt-4">
+                    <span className="text-xs font-medium text-white/55 group-hover:text-white/80 transition-colors">
+                      Open filtered list
+                    </span>
+                    <span
+                      className={`h-1 w-12 rounded-full bg-gradient-to-r ${item.gradientBorder} opacity-80 transition-all duration-300 group-hover:w-20 group-hover:opacity-100`}
+                    />
+                  </div>
+                </Link>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -91,10 +120,10 @@ export default function ListenerCategories() {
         <div className="mt-10">
           <Link
             href="/experts"
-            className="inline-flex items-center gap-2 text-sm font-medium text-white/70 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.05] px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/25 hover:bg-white/[0.1] hover:text-white"
           >
             See all listeners
-            <HiOutlineArrowRight className="w-4 h-4" />
+            <HiOutlineArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </div>

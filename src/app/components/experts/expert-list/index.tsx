@@ -22,6 +22,7 @@ import {
   IoVideocamOutline,
 } from "react-icons/io5";
 import BlockUserModal from "../../profileThings/BlockUserModal";
+import ListenerDetailModal from "../ListenerDetailModal";
 
 /* ----------------------------- Types & Dummy Data ----------------------------- */
 
@@ -162,6 +163,8 @@ export default function ExpertsList() {
     id: string;
     name?: string;
   } | null>(null);
+
+  const [detailListener, setDetailListener] = useState<Consultant | null>(null);
 
   const openBlockModal = (consultant: Consultant) => {
     setBlockTarget({
@@ -672,6 +675,16 @@ export default function ExpertsList() {
                             {(c.description || c.bio || "").trim()}
                           </p>
                         )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDetailListener(c);
+                          }}
+                          className="mt-2 text-left text-xs font-semibold text-pink-400/95 hover:text-pink-300 transition-colors"
+                        >
+                          View full profile
+                        </button>
 
                         {/* Status badge */}
                         <div className="mt-2">
@@ -881,6 +894,12 @@ export default function ExpertsList() {
           </div>
         )}
       </div>
+
+      <ListenerDetailModal
+        open={!!detailListener}
+        onClose={() => setDetailListener(null)}
+        listener={detailListener}
+      />
 
       <BlockUserModal
         open={!!blockTarget}

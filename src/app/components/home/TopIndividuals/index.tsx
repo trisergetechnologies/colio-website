@@ -289,8 +289,7 @@ export default function TopIndividuals() {
           className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 md:gap-6"
           variants={containerStagger}
           initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
+          animate="show"
         >
           {isLoading
             ? [...Array(4)].map((_, i) => <SkeletonCard key={i} />)
