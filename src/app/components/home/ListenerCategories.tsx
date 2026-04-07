@@ -39,8 +39,7 @@ export default function ListenerCategories() {
             <span className="text-white/90">how you feel</span>
           </h2>
           <p className="mt-3 text-base text-white/55 leading-relaxed">
-            Choose a category to open the experts page with that filter — clean,
-            scannable, like organizing notes in Notion.
+           
           </p>
         </div>
 
