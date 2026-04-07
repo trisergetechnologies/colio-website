@@ -16,34 +16,28 @@ export default function Faq() {
   return (
     <section
       id="faq-section"
-      className="relative overflow-hidden py-28 md:py-36"
+      className="relative overflow-hidden py-24 md:py-28"
       style={{
         background: `linear-gradient(180deg, #0f0f11 0%, ${colors.background.end} 100%)`,
       }}
     >
-      {/* 🌌 Ambient floating gradients */}
-      <div
-        className="absolute bottom-0 left-0 w-full h-[220px] pointer-events-none"
-        style={{
-          background: `linear-gradient(to bottom, rgba(15,15,17,0) 0%, rgba(15,15,17,0.9) 55%, ${colors.background.end} 100%)`,
-        }}
-      />
+      <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[length:100%_56px] opacity-20" />
 
       <div className="container relative z-20">
         {/* Header */}
         <motion.div
-          className="text-center mb-16"
+          className="text-center mb-12 md:mb-14"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
         >
           <h2
-            className="text-4xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-[#f5d0fe] via-[#d946ef] to-[#a21caf] bg-clip-text text-transparent"
+            className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-[#f5d0fe] via-[#d946ef] to-[#a21caf] bg-clip-text text-transparent"
           >
             Frequently Asked Questions
           </h2>
-          <p className="text-white/85 lg:text-lg font-normal max-w-2xl mx-auto leading-relaxed">
+          <p className="text-white/70 lg:text-lg font-normal max-w-2xl mx-auto leading-relaxed">
             Everything you need to know about how Colio works — privacy, security,
             payments, and safe conversations on our platform.
           </p>
@@ -60,17 +54,17 @@ export default function Faq() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: i * 0.1 }}
-                className="w-full mb-5 rounded-2xl bg-[#1b1b1f]/80 backdrop-blur-xl border border-white/10 shadow-[0_8px_25px_-8px_rgba(217,70,239,0.3)] overflow-hidden"
+                className="w-full mb-4 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 overflow-hidden"
               >
                 <Disclosure>
                   {({ open }) => (
                     <div>
                       <DisclosureButton
-                        className="flex justify-between items-center w-full text-left px-6 py-5 md:py-6 transition-all duration-300"
+                        className="flex justify-between items-center w-full text-left px-6 py-5 md:py-5 transition-all duration-200 hover:bg-white/[0.02]"
                       >
                         <span
                           className={`text-lg md:text-xl font-semibold ${
-                            open ? "text-[#f5d0fe]" : "text-white/90"
+                            open ? "text-[#f5d0fe]" : "text-white/85"
                           }`}
                         >
                           {item.heading}
@@ -82,7 +76,7 @@ export default function Faq() {
                           <Icon
                             icon="tabler:chevron-down"
                             className={`text-3xl ${
-                              open ? "text-[#f5d0fe]" : "text-white/60"
+                              open ? "text-[#f5d0fe]" : "text-white/45"
                             }`}
                           />
                         </motion.div>
@@ -97,7 +91,7 @@ export default function Faq() {
                             transition={{ duration: 0.4, ease: "easeInOut" }}
                           >
                             <DisclosurePanel
-                              className="px-6 pb-6 pt-2 text-white/80 leading-relaxed text-base md:text-lg border-t border-white/10"
+                              className="px-6 pb-6 pt-2 text-white/70 leading-relaxed text-base md:text-lg border-t border-white/10"
                             >
                               {item.subheading}
                             </DisclosurePanel>
@@ -129,9 +123,9 @@ export default function Faq() {
                 alt="Colio FAQ support illustration"
                 width={700}
                 height={400}
-                className="drop-shadow-[0_0_30px_rgba(217,70,239,0.35)]"
+                className="drop-shadow-[0_0_16px_rgba(217,70,239,0.25)]"
               />
-              <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(217,70,239,0.25),transparent_70%)] blur-2xl rounded-full"></div>
+              <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(217,70,239,0.14),transparent_70%)] blur-2xl rounded-full"></div>
             </motion.div>
           </motion.div>
         </div>
@@ -141,7 +135,7 @@ export default function Faq() {
       <div
         className="absolute bottom-0 left-0 w-full h-[220px] pointer-events-none"
         style={{
-          background: `linear-gradient(to bottom, rgba(15,15,17,0) 0%, rgba(15,15,17,0.9) 60%, ${colors.background.end} 100%)`,
+          background: `linear-gradient(to bottom, rgba(15,15,17,0) 0%, rgba(15,15,17,0.85) 60%, ${colors.background.end} 100%)`,
         }}
       />
     </section>

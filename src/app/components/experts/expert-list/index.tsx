@@ -1,12 +1,17 @@
 "use client";
 
 import { colors } from "@/constants/colors";
+import {
+  LISTENER_CATEGORY_IDS,
+  isListenerCategoryId,
+  type ListenerCategoryFilter,
+} from "@/constants/consultants";
 import { useCall } from "@/context/CallContext";
 import { getToken } from "@/lib/utils/tokenHelper";
 import axios from "axios";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   IoCallOutline,
@@ -25,6 +30,8 @@ type Consultant = {
   name: string;
   avatar?: string | null;
   bio?: string | null;
+  description?: string | null;
+  category?: string | null;
   languages?: string[];
   ratePerMinute?: number | null;
   ratePerMinuteVideo?: number | null;
@@ -34,6 +41,11 @@ type Consultant = {
   experienceMonths?: number | null;
   dateOfBirth?: string | null;
 };
+
+const CATEGORY_OPTIONS: ListenerCategoryFilter[] = [
+  "All",
+  ...LISTENER_CATEGORY_IDS,
+];
 
 type Pro = {
   id: string;
@@ -124,6 +136,8 @@ const calculateAge = (dateOfBirth: string | null | undefined): number | null => 
 
 export default function ExpertsList() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.colio.in/api";
   const [callingId, setCallingId] = useState<string | null>(null);
   const PAGE_LIMIT = 12;
@@ -134,6 +148,11 @@ export default function ExpertsList() {
 
   const [tab, setTab] = useState<"recommended" | "following">("recommended");
   const [search, setSearch] = useState<string>("");
+  /** URL is source of truth so first fetch matches ?category= on navigation from home (avoids race with useEffect). */
+  const selectedCategory = useMemo((): ListenerCategoryFilter => {
+    const c = searchParams.get("category");
+    return isListenerCategoryId(c) ? c : "All";
+  }, [searchParams]);
 
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(false);
@@ -155,13 +174,21 @@ export default function ExpertsList() {
     setBlockTarget(null);
   };
 
+  const applyCategory = (cat: ListenerCategoryFilter) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (cat === "All") params.delete("category");
+    else params.set("category", cat);
+    const q = params.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  };
+
   const fetchData = useCallback(
     async (opts?: { page?: number; append?: boolean }) => {
       const p = opts?.page ?? 1;
       const append = !!opts?.append;
       setIsLoading(true);
       try {
-        const token = await getToken();
+        const token = getToken();
         if (tab === "following") {
           const res = await axios.get(`${API_BASE_URL}/customer/favorites`, {
             headers: token ? { Authorization: `Bearer ${token}` } : undefined,
@@ -189,13 +216,16 @@ export default function ExpertsList() {
             setUsingDummy(false);
           }
         } else {
+          const catQs =
+            selectedCategory !== "All"
+              ? `&category=${encodeURIComponent(selectedCategory)}`
+              : "";
           const res = await axios.get(
-            `${API_BASE_URL}/customer/consultants?page=${p}&limit=${PAGE_LIMIT}`,
+            `${API_BASE_URL}/customer/consultants?page=${p}&limit=${PAGE_LIMIT}${catQs}`,
             {
               headers: token ? { Authorization: `Bearer ${token}` } : undefined,
             }
           );
-          console.log(res)
 
           if (res.data?.success && (res.data.data?.consultants || res.data.data)) {
             const returned =
@@ -212,6 +242,8 @@ export default function ExpertsList() {
               ratePerMinuteVideo: c.ratePerMinuteVideo || null,
               totalSessions: c.totalSessions || null,
               bio: c.bio || null,
+              description: c.description || c.bio || null,
+              category: c.category || null,
               experienceMonths: c.experienceMonths || null,
               dateOfBirth: c.dateOfBirth || c.dob || null,
             })) as Consultant[];
@@ -267,14 +299,14 @@ export default function ExpertsList() {
         setIsLoading(false);
       }
     },
-    [API_BASE_URL, PAGE_LIMIT, tab]
+    [API_BASE_URL, PAGE_LIMIT, tab, selectedCategory]
   );
 
   useEffect(() => {
     setPage(1);
     fetchData({ page: 1, append: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab]);
+  }, [tab, selectedCategory]);
 
   const handleLoadMore = async () => {
     if (usingDummy) {
@@ -393,7 +425,10 @@ export default function ExpertsList() {
         data = consultants.filter(
           (c) =>
             (c.name || "").toLowerCase().includes(q) ||
-            (c.languages || []).join(" ").toLowerCase().includes(q)
+            (c.languages || []).join(" ").toLowerCase().includes(q) ||
+            (c.bio || "").toLowerCase().includes(q) ||
+            (c.description || "").toLowerCase().includes(q) ||
+            (c.category || "").toLowerCase().includes(q)
         );
       }
     }
@@ -445,7 +480,7 @@ export default function ExpertsList() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search experts or languages..."
+                  placeholder="Search name, languages, or topic..."
                   className="w-full rounded-2xl px-5 py-3.5 bg-white/[0.04] placeholder:text-white/40 text-white text-sm outline-none border border-white/[0.06] focus:border-pink-500/40 focus:bg-white/[0.06] transition-all duration-300"
                 />
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-pink-500/20 to-purple-500/20 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 -z-10 blur-xl" />
@@ -473,6 +508,31 @@ export default function ExpertsList() {
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Category filters (URL: ?category=) */}
+        <div
+          className="mb-8 flex flex-wrap gap-2"
+          role="toolbar"
+          aria-label="Filter by topic"
+        >
+          {CATEGORY_OPTIONS.map((category) => {
+            const active = selectedCategory === category;
+            return (
+              <button
+                key={category}
+                type="button"
+                onClick={() => applyCategory(category)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 border ${
+                  active
+                    ? "bg-gradient-to-r from-pink-600 to-pink-500 text-white border-transparent shadow-lg shadow-pink-500/20"
+                    : "bg-white/[0.04] text-white/70 border-white/[0.08] hover:bg-white/[0.08] hover:text-white"
+                }`}
+              >
+                {category === "All" ? "All topics" : category}
+              </button>
+            );
+          })}
         </div>
 
         {/* Grid */}
@@ -600,6 +660,18 @@ export default function ExpertsList() {
                         <p className="text-white/50 text-sm mt-1 truncate">
                           {c.languages?.join(" • ") || "English"}
                         </p>
+                        {c.category && (
+                          <p className="mt-1.5">
+                            <span className="inline-flex max-w-full items-center rounded-lg border border-pink-500/25 bg-pink-500/10 px-2 py-0.5 text-xs font-medium text-pink-200/90 truncate">
+                              {c.category}
+                            </span>
+                          </p>
+                        )}
+                        {(c.description || c.bio)?.trim() && (
+                          <p className="text-white/45 text-sm mt-2 line-clamp-2 leading-snug">
+                            {(c.description || c.bio || "").trim()}
+                          </p>
+                        )}
 
                         {/* Status badge */}
                         <div className="mt-2">

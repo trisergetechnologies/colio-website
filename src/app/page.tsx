@@ -10,6 +10,7 @@ import Work from "./components/home/work";
 import Footer from "./components/layout/footer";
 import Header from "./components/layout/header";
 import TopIndividuals from "./components/home/TopIndividuals";
+import ListenerCategories from "./components/home/ListenerCategories";
 import AvailabilityToast from "./components/shared/availability-toast";
 import WelcomeModalClient from "./components/modals/WelcomeModalClient";
 import BestMatchModalClient from "./components/modals/BestMatchModalClient";
@@ -56,6 +57,7 @@ export default async function Home() {
       {/* <HeroGridPageClient/> */}
       {/* <AvailabilityToast /> */}
       <Banner/>
+      <ListenerCategories />
       <TopIndividuals />
       {/* <Work /> */}
       {/* <Features /> */}

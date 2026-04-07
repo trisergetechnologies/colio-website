@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 
 import Spinner from "../components/Spinner";
 import Header from "../components/layout/header";
@@ -35,7 +35,9 @@ export default function ExpertsPageClient() {
       <div>
         <Header />
         <ExpertHero />
-        <ExpertsList />
+        <Suspense fallback={<Spinner message="Loading listeners..." />}>
+          <ExpertsList />
+        </Suspense>
         <Footer />
       </div>
   );

@@ -72,44 +72,45 @@ export default function ContactForm() {
   return (
     <section
       id="contact"
-      className="relative overflow-hidden py-28 md:py-36"
+      className="relative overflow-hidden py-24 md:py-28"
       style={{
         background: `linear-gradient(180deg, ${colors.background.end} 0%, #0f0f11 100%)`,
       }}
     >
-      {/* 🌌 Background glows */}
+      {/* Background glows */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-[10%] left-[8%] w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(217,70,239,0.25),transparent_70%)] blur-3xl animate-float"></div>
-        <div className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(255,255,255,0.08),transparent_80%)] blur-3xl animate-float-slow"></div>
+        <div className="absolute top-[10%] left-[8%] w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(217,70,239,0.16),transparent_70%)] blur-3xl animate-float"></div>
+        <div className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(255,255,255,0.06),transparent_80%)] blur-3xl animate-float-slow"></div>
+        <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[length:100%_56px] opacity-20" />
       </div>
 
       <div className="container relative z-20">
         <motion.div
-          className="text-center mb-14"
+          className="text-center mb-12"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
         >
           <h2
-            className="text-4xl md:text-5xl font-extrabold mb-6 bg-gradient-to-r from-[#f5d0fe] via-[#d946ef] to-[#a21caf] bg-clip-text text-transparent"
+            className="text-4xl md:text-5xl font-bold mb-5 bg-gradient-to-r from-[#f5d0fe] via-[#d946ef] to-[#a21caf] bg-clip-text text-transparent"
           >
             Get in Touch
           </h2>
-          <p className="text-white/85 lg:text-lg max-w-2xl mx-auto leading-relaxed">
+          <p className="text-white/70 lg:text-lg max-w-2xl mx-auto leading-relaxed">
             Have questions, suggestions, or partnership ideas?  
             We’d love to hear from you. The Colio app is coming soon to Play Store and App Store —  
             let’s create something amazing together.
           </p>
         </motion.div>
 
-        {/* 💬 Form Card */}
+        {/* Form Card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.96 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative max-w-3xl mx-auto rounded-3xl p-10 md:p-12 backdrop-blur-2xl border border-white/10 bg-white/5 shadow-[0_0_40px_-8px_rgba(217,70,239,0.25)]"
+          className="relative max-w-3xl mx-auto rounded-3xl p-8 md:p-10 backdrop-blur-2xl border border-white/10 bg-white/[0.04] shadow-[0_12px_36px_-12px_rgba(0,0,0,0.65)]"
         >
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name Fields */}
@@ -129,7 +130,7 @@ export default function ContactForm() {
                     value={formData[name as keyof typeof formData]}
                     onChange={handleChange}
                     placeholder={name === "firstname" ? "John" : "Doe"}
-                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-[#d946ef] transition-all"
+                    className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-white/15 text-white placeholder:text-white/35 focus:outline-none focus:border-[#d946ef]/70 focus:bg-white/[0.08] transition-all"
                   />
                 </div>
               ))}
@@ -159,7 +160,7 @@ export default function ContactForm() {
                         ? "john.doe@example.com"
                         : "+91 98765 43210"
                     }
-                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-[#d946ef] transition-all"
+                    className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-white/15 text-white placeholder:text-white/35 focus:outline-none focus:border-[#d946ef]/70 focus:bg-white/[0.08] transition-all"
                   />
                 </div>
               ))}
@@ -179,7 +180,7 @@ export default function ContactForm() {
                 value={formData.Message}
                 onChange={handleChange}
                 placeholder="Tell us how we can help..."
-                className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-[#d946ef] transition-all h-32 resize-none"
+                className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-white/15 text-white placeholder:text-white/35 focus:outline-none focus:border-[#d946ef]/70 focus:bg-white/[0.08] transition-all h-32 resize-none"
               />
             </div>
 
@@ -206,7 +207,7 @@ export default function ContactForm() {
           </form>
         </motion.div>
 
-        {/* ✅ Success Modal */}
+        {/* Success Modal */}
         <AnimatePresence>
           {showThanks && (
             <motion.div
@@ -220,7 +221,7 @@ export default function ContactForm() {
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 30, opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-10 max-w-lg text-center shadow-[0_0_40px_-8px_rgba(217,70,239,0.3)]"
+                className="bg-white/[0.08] backdrop-blur-xl border border-white/20 rounded-3xl p-10 max-w-lg text-center shadow-[0_12px_36px_-12px_rgba(0,0,0,0.65)]"
               >
                 <h3 className="text-2xl font-bold text-white mb-4">
                   Thank You 💜

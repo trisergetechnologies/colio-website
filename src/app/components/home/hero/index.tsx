@@ -32,39 +32,37 @@ export default function Banner() {
       className="relative overflow-hidden"
       style={{
         minHeight: "100vh",
-        background: `radial-gradient(circle at top left, #0b0b0e 0%, #111114 100%)`,
+        background: `radial-gradient(circle at 12% 10%, #17171f 0%, #0f0f12 45%, #0d0d10 100%)`,
       }}
     >
-      {/* ✨ Ambient Layers */}
-      <div className="absolute inset-0">
-        <div className="absolute top-[-5%] left-[-5%] w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(217,70,239,0.25),transparent_70%)] blur-3xl animate-float-slow"></div>
-        <div className="absolute bottom-[-5%] right-[-5%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(139,92,246,0.25),transparent_80%)] blur-3xl animate-float delay-1000"></div>
+      {/* Ambient layers */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute -top-16 -left-16 w-[420px] h-[420px] bg-[radial-gradient(circle,rgba(217,70,239,0.16),transparent_72%)] blur-3xl" />
+        <div className="absolute -bottom-24 right-0 w-[520px] h-[520px] bg-[radial-gradient(circle,rgba(139,92,246,0.14),transparent_72%)] blur-3xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[length:100%_52px] opacity-20" />
       </div>
 
-      {/* Gentle overlay for depth */}
-      <div className="absolute inset-0 bg-black/40 z-10"></div>
+      <div className="absolute inset-0 bg-black/30 z-10" />
 
-      {/* Fade to next section */}
       <div
-        className="absolute bottom-0 left-0 w-full h-[220px] z-20 pointer-events-none"
+        className="absolute bottom-0 left-0 w-full h-[200px] z-20 pointer-events-none"
         style={{
-          background: `linear-gradient(to bottom, rgba(0,0,0,0) 0%, #0f0f11 60%, ${colors.background.end} 100%)`,
+          background: `linear-gradient(to bottom, rgba(0,0,0,0) 0%, #0f0f11 65%, ${colors.background.end} 100%)`,
         }}
       />
 
-      {/* Content */}
       <motion.div
         style={{ y: yHero }}
-        className="relative z-30 container py-32 md:py-40 flex flex-col lg:flex-row items-center justify-between gap-16"
+        className="relative z-30 container py-24 md:py-32 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16"
       >
         {/* Left */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
-          className="flex-1 text-center lg:text-left"
+          className="flex-1 text-center lg:text-left max-w-2xl"
         >
-          <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-6 tracking-tight">
+          <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-5 tracking-tight">
             <span
               className="bg-clip-text text-transparent"
               style={{
@@ -74,12 +72,12 @@ export default function Banner() {
               Meaningful Conversations. Real Human Connection.
             </span>
             <br />
-            <span className="text-white drop-shadow-[0_0_15px_rgba(217,70,239,0.4)]">
+            <span className="text-white">
               Talk, Share, and Feel Heard.
             </span>
           </h1>
 
-          <p className="text-white/85 text-lg md:text-xl max-w-[90%] lg:max-w-[550px] mx-auto lg:mx-0 mb-10 leading-relaxed">
+          <p className="text-white/78 text-base md:text-lg max-w-[92%] lg:max-w-[580px] mx-auto lg:mx-0 mb-8 leading-relaxed">
             Colio is a social conversation platform where you can connect with verified listeners for friendly discussions, emotional sharing, and communication support.
           </p>
 
@@ -88,7 +86,7 @@ export default function Banner() {
               href="/experts"
               whileHover={{ scale: 1.07 }}
               whileTap={{ scale: 0.97 }}
-              className="text-lg font-semibold text-white py-3 px-10 rounded-2xl shadow-lg transition-all"
+              className="text-base font-semibold text-white py-3 px-8 rounded-xl border border-white/10 shadow-lg transition-all"
               style={{
                 background: `linear-gradient(90deg, ${colors.button.start}, ${colors.button.end})`,
               }}
@@ -100,7 +98,7 @@ export default function Banner() {
           </div>
 
           {/* Compliance Disclaimer */}
-          <p className="text-xs text-white/50 mt-6">
+          <p className="text-xs text-white/45 mt-5 leading-relaxed">
             Colio is a social conversation platform. We do not provide dating,
             romantic, or adult services. All conversations must follow community
             guidelines and respectful communication policies.
@@ -113,17 +111,17 @@ export default function Banner() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, delay: 0.2 }}
-          className="flex-1 relative"
+          className="flex-1 relative w-full"
         >
-          <div className="relative w-full max-w-lg mx-auto">
+          <div className="relative w-full max-w-xl mx-auto rounded-2xl border border-white/10 bg-white/[0.03] p-3 md:p-4 backdrop-blur-sm">
             <Image
               src={getImagePath("/images/banner/wallpaper-hero01.png")}
               alt="Colio conversation platform interface"
               width={1280}
               height={1080}
-              className="rounded-2xl relative z-10 drop-shadow-[0_0_40px_rgba(217,70,239,0.4)]"
+              className="rounded-xl relative z-10"
             />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,70,239,0.25),transparent_80%)] blur-3xl rounded-full"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,70,239,0.18),transparent_78%)] blur-3xl rounded-2xl" />
           </div>
         </motion.div>
       </motion.div>

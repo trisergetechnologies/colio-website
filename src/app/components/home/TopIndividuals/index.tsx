@@ -256,16 +256,17 @@ export default function TopIndividuals() {
 
   return (
     <section
-      className="relative overflow-hidden py-28 md:py-32"
+      className="relative overflow-hidden py-24 md:py-28"
       style={{
         background: `linear-gradient(180deg, #0f0f11 0%, ${colors.background.end} 100%)`,
       }}
     >
+      <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[length:100%_56px] opacity-20" />
       <div className="container relative z-20">
 
         {/* Header */}
         <motion.div
-          className="text-center mb-16"
+          className="text-center mb-12 md:mb-14"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -274,18 +275,18 @@ export default function TopIndividuals() {
             FEATURED LISTENERS
           </p>
 
-          <h2 className="text-4xl md:text-5xl font-extrabold mb-6" style={gradientStyles.text}>
+          <h2 className="text-4xl md:text-5xl font-bold mb-5" style={gradientStyles.text}>
             Trusted People to Talk With
           </h2>
 
-          <p className="text-white/85 max-w-2xl mx-auto">
+          <p className="text-white/70 max-w-2xl mx-auto">
             Verified and moderated conversation partners available online.
           </p>
         </motion.div>
 
         {/* Cards */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 md:gap-6"
           variants={containerStagger}
           initial="hidden"
           whileInView="show"
@@ -302,15 +303,15 @@ export default function TopIndividuals() {
                   <motion.div
                     key={p.id}
                     variants={cardVariants}
-                    whileHover={{ y: -6, scale: 1.02 }}
-                    className="relative h-[420px] overflow-hidden rounded-3xl border border-white/10 bg-black/40 group"
+                    whileHover={{ y: -4, scale: 1.01 }}
+                    className="relative h-[420px] overflow-hidden rounded-3xl border border-white/12 bg-[#111115]/80 backdrop-blur-md group"
                   >
                     {/* Image (No longer fades when disabled) */}
                     <Image src={p.avatar} alt={p.name} fill className="object-cover transition-all duration-500" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/10" />
 
                     {/* --- STATUS BADGE (Top Left) --- */}
-                    <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10">
+                    <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/55 backdrop-blur-md border border-white/10">
                         <div className={`w-2 h-2 rounded-full ${dotColor} shadow-[0_0_8px] ${shadowColor}`} />
                         <span className="text-white/90 text-[11px] uppercase font-bold tracking-wider">{label}</span>
                     </div>
@@ -323,10 +324,10 @@ export default function TopIndividuals() {
                         <button 
                             onClick={() => !isDisabled && handleCall(p, "voice")} 
                             disabled={isDisabled}
-                            className={`w-10 h-10 rounded-full flex items-center justify-center bg-black/40 text-green-500 transition-all duration-300 ${
+                            className={`w-10 h-10 rounded-full flex items-center justify-center bg-black/45 text-green-400 transition-all duration-300 ${
                                 isDisabled 
                                 ? "cursor-not-allowed" 
-                                : "hover:bg-white hover:text-black hover:scale-110"
+                                : "hover:bg-white/90 hover:text-black hover:scale-105"
                             }`}
                         >
                           <IoCallOutline />
@@ -336,10 +337,10 @@ export default function TopIndividuals() {
                         <button 
                             onClick={() => !isDisabled && handleChat(p)} 
                             disabled={isDisabled}
-                            className={`w-10 h-10 rounded-full flex items-center justify-center bg-black/40 text-green-500 transition-all duration-300 ${
+                            className={`w-10 h-10 rounded-full flex items-center justify-center bg-black/45 text-green-400 transition-all duration-300 ${
                                 isDisabled 
                                 ? "cursor-not-allowed" 
-                                : "hover:bg-white hover:text-black hover:scale-110"
+                                : "hover:bg-white/90 hover:text-black hover:scale-105"
                             }`}
                         >
                           <IoChatbubbleOutline />
@@ -349,10 +350,10 @@ export default function TopIndividuals() {
                         <button 
                             onClick={() => !isDisabled && handleCall(p, "video")} 
                             disabled={isDisabled}
-                            className={`w-10 h-10 rounded-full flex items-center justify-center bg-black/40 text-green-500 transition-all duration-300 ${
+                            className={`w-10 h-10 rounded-full flex items-center justify-center bg-black/45 text-green-400 transition-all duration-300 ${
                                 isDisabled 
                                 ? "cursor-not-allowed" 
-                                : "hover:bg-white hover:text-black hover:scale-110"
+                                : "hover:bg-white/90 hover:text-black hover:scale-105"
                             }`}
                         >
                           <IoVideocamOutline />
@@ -363,9 +364,9 @@ export default function TopIndividuals() {
 
                     {/* Bottom content */}
                     <div className="absolute bottom-0 left-0 z-10 p-5 w-full">
-                      <h5 className="text-white text-lg font-semibold">{p.name}</h5>
+                      <h5 className="text-white text-lg font-semibold tracking-tight">{p.name}</h5>
 
-                      <p className="text-white/70 text-sm">Verified Listener</p>
+                      <p className="text-white/75 text-sm">Verified Listener</p>
 
                       <p className="text-white/60 text-xs mt-1 truncate">
                         {p.profession || "Conversation Partner"}
@@ -388,7 +389,7 @@ export default function TopIndividuals() {
 
         {/* CTA */}
         <div className="mt-12 flex justify-center">
-          <Link href={seeAllHref} className="px-6 py-3 rounded-full border border-white/20 bg-white/10 text-white">
+          <Link href={seeAllHref} className="px-6 py-3 rounded-full border border-white/20 bg-white/[0.06] hover:bg-white/[0.12] text-white transition-colors">
             Explore All Listeners <IoArrowForward className="inline ml-2" />
           </Link>
         </div>
